@@ -1,0 +1,11 @@
+-- Existing sdkconfig 'C:/Users/Administrator/Desktop/code/smart_locker/sdkconfig' renamed to 'C:/Users/Administrator/Desktop/code/smart_locker/sdkconfig.old'.
+-- Found Git: D:/Espressif/tools/idf-git/2.39.2/cmd/git.exe (found version "2.39.2.windows.1")
+-- The C compiler identification is GNU 14.2.0
+-- The CXX compiler identification is GNU 14.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: D:/Espressif/tools/riscv32-esp-elf/esp-14.2.0_20241119/riscv32-esp-elf/bin/riscv32-esp-elf-gcc.exe
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - failed
+-- Check for working C compiler: D:/Espressif/tools/riscv32-esp-elf/esp-14.2.0_20241119/riscv32-esp-elf/bin/riscv32-esp-elf-gcc.exe
+-- Check for working C compiler: D:/Espressif/tools/riscv32-esp-elf/esp-14.2.0_20241119/riscv32-esp-elf/bin/riscv32-esp-elf-gcc.exe - broken
+-- Configuring incomplete, errors occurred!

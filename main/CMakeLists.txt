@@ -1,0 +1,10 @@
+idf_component_register(SRCS 
+                      "smart_locker.c"
+                     "com/debug/com_debug.c"
+                     "Int/Int_WTN6.c"
+                     "Int/Int_WS2812.c"
+                    INCLUDE_DIRS 
+                     "com"
+                     "Int"
+
+                    )
