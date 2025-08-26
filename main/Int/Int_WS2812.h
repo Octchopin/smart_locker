@@ -6,7 +6,7 @@
 /*引入头文件*/
 #include "debug/com_debug.h"
 #include "driver/rmt_tx.h"
-
+#include "Int_SC12B.h"
 
 
 #ifdef __cplusplus

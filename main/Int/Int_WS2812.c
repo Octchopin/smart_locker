@@ -4,15 +4,14 @@
  * @author Vesper Shaw (octxgq@gmail.com)
  * @version 1.0
  * @date 2025-08-15
- * 
+ *
  * @copyright Copyright (c) 2025  XXX有限公司
- * 
+ *
  */
 #include "Int_WS2812.h"
 
 #define RMT_LED_STRIP_RESOLUTION_HZ 10000000 // 10MHz resolution, 1 tick = 0.1us (led strip needs a high resolution)
 #define RMT_LED_STRIP_GPIO_NUM 6             // 根据CPU链接的端口
-
 
 rmt_channel_handle_t led_chan = NULL;
 
@@ -30,7 +29,7 @@ static const rmt_symbol_word_t ws2812_one = {
     .duration1 = 0.3 * RMT_LED_STRIP_RESOLUTION_HZ / 1000000, // T1L=0.3us
 };
 
-//reset defaults to 50uS
+// reset defaults to 50uS
 static const rmt_symbol_word_t ws2812_reset = {
     .level0 = 1,
     .duration0 = RMT_LED_STRIP_RESOLUTION_HZ / 1000000 * 50 / 2,
@@ -38,8 +37,7 @@ static const rmt_symbol_word_t ws2812_reset = {
     .duration1 = RMT_LED_STRIP_RESOLUTION_HZ / 1000000 * 50 / 2,
 };
 
-
-static size_t encoder_callback(const void *data, size_t data_size,size_t symbols_written, size_t symbols_free,rmt_symbol_word_t *symbols, bool *done, void *arg);
+static size_t encoder_callback(const void *data, size_t data_size, size_t symbols_written, size_t symbols_free, rmt_symbol_word_t *symbols, bool *done, void *arg);
 
 /**
  * @brief     WS2812 init
@@ -73,16 +71,27 @@ void Int_WS2812_Init(void)
 }
 
 
+/**
+ * @brief 根据传入的按键值和颜色的值，来点亮对应WLED
+ *
+ * @param key_value 按键值
+ * @param  color_LED
+ *
+ */
+*/
+    void Int_WS2812_Set_LED(uint8_t key_value, uint32_t *color_LED)
+{
 
+    // 默认熄灭所以灯带
 
-
-
+    // 点亮对应按键灯带
+}
 
 /**
  * @brief Encoder callback function for WS2812 LED strip control.
  * This function encodes the data into RMT symbols for transmission.
  * It handles the encoding of bytes into symbols and manages the end of the transaction.
- * 
+ *
  * @param data Pointer to the data to be encoded.
  * @param data_size Size of the data in bytes.
  * @param symbols_written Number of symbols already written.
@@ -92,7 +101,7 @@ void Int_WS2812_Init(void)
  * @param arg Opaque user-supplied argument (not used here).
  * @return Number of symbols written by this callback.
  */
-static size_t encoder_callback(const void *data, size_t data_size,size_t symbols_written, size_t symbols_free,rmt_symbol_word_t *symbols, bool *done, void *arg)
+static size_t encoder_callback(const void *data, size_t data_size, size_t symbols_written, size_t symbols_free, rmt_symbol_word_t *symbols, bool *done, void *arg)
 {
     // We need a minimum of 8 symbol spaces to encode a byte. We only
     // need one to encode a reset, but it's simpler to simply demand that
