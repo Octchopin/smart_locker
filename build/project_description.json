@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "smart_locker",
-    "project_version":    "619a70c-dirty",
+    "project_version":    "8dfdaea-dirty",
     "project_path":       "C:/Users/Administrator/Desktop/code_smart_locker/smart_locker",
     "idf_path":           "D:/developmentTool/Espressif/frameworks/esp-idf-v5.4.1",
     "build_dir":          "C:/Users/Administrator/Desktop/code_smart_locker/smart_locker/build",

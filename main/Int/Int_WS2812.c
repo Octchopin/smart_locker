@@ -70,7 +70,6 @@ void Int_WS2812_Init(void)
     rmt_enable(led_chan);
 }
 
-
 /**
  * @brief 根据传入的按键值和颜色的值，来点亮对应WLED
  *
@@ -79,11 +78,11 @@ void Int_WS2812_Init(void)
  *
  * @return None
  */
-void Int_WS2812_Set_LED(uint8_t key_value, uint32_t *color_LED)
+void Int_WS2812_Set_LED(Touch_Key key_value, uint8_t (*color_LED)[3])
 {
 
     // 默认熄灭所以灯带
-
+    memset(color_LED, 0, sizeof(*color_LED));
     // 点亮对应按键灯带
 }
 
