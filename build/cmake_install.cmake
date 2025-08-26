@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/Administrator/Desktop/code/smart_locker
+# Install script for directory: C:/Users/Administrator/Desktop/code_smart_locker/smart_locker
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,12 +34,12 @@ endif()
 
 # Set path to fallback-tool for dependency-resolution.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "D:/Espressif/tools/riscv32-esp-elf/esp-14.2.0_20241119/riscv32-esp-elf/bin/riscv32-esp-elf-objdump.exe")
+  set(CMAKE_OBJDUMP "D:/developmentTool/Espressif/tools/tools/riscv32-esp-elf/esp-14.2.0_20241119/riscv32-esp-elf/bin/riscv32-esp-elf-objdump.exe")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/Administrator/Desktop/code/smart_locker/build/esp-idf/cmake_install.cmake")
+  include("C:/Users/Administrator/Desktop/code_smart_locker/smart_locker/build/esp-idf/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -57,6 +57,6 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-  file(WRITE "C:/Users/Administrator/Desktop/code/smart_locker/build/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "C:/Users/Administrator/Desktop/code_smart_locker/smart_locker/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

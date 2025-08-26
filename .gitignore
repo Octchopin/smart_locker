@@ -1,0 +1,58 @@
+# ================================
+# ESP-IDF / ESP32 项目忽略
+# ================================
+
+# 构建输出目录
+/build/
+*.elf
+*.bin
+*.hex
+*.map
+*.a
+*.lib
+
+# CMake 构建缓存
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Ninja 构建文件
+build.ninja
+rules.ninja
+
+# Python 生成文件
+__pycache__/
+*.pyc
+*.pyo
+
+# 日志、临时文件
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# ================================
+# VSCode 配置
+# ================================
+
+# 忽略用户私有设置
+.vscode/c_cpp_properties.json
+.vscode/settings.json
+.vscode/extensions.json
+
+# 可选择保留的（团队共享调试/任务配置）
+# .vscode/launch.json
+# .vscode/tasks.json
+
+# ================================
+# DevContainer 配置
+# ================================
+
+
+# ================================
+# 其他
+# ================================
+.pio/       # PlatformIO
+*.idf       # ESP-IDF 特定临时文件

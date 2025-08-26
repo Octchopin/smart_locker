@@ -77,9 +77,9 @@ void Int_WS2812_Init(void)
  * @param key_value 按键值
  * @param  color_LED
  *
+ * @return None
  */
-*/
-    void Int_WS2812_Set_LED(uint8_t key_value, uint32_t *color_LED)
+void Int_WS2812_Set_LED(uint8_t key_value, uint32_t *color_LED)
 {
 
     // 默认熄灭所以灯带
