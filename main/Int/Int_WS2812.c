@@ -10,10 +10,25 @@
  */
 #include "Int_WS2812.h"
 
-#define RMT_LED_STRIP_RESOLUTION_HZ 10000000 // 10MHz resolution, 1 tick = 0.1us (led strip needs a high resolution)
-#define RMT_LED_STRIP_GPIO_NUM 6             // 根据CPU链接的端口
+// 定义几个常用颜色数组，用于暴漏给外部使用
+uint8_t White_LED[3] = {255, 255, 255};
+uint8_t Red_LED[3] = {255, 0, 0};
+uint8_t Green_LED[3] = {0, 255, 0};
+uint8_t Blue_LED[3] = {0, 0, 255};
+uint8_t Yellow_LED[3] = {255, 255, 0};
+uint8_t Cyan_LED[3] = {0, 255, 255};
+uint8_t Purple_LED[3] = {255, 0, 255};
+uint8_t Orange_LED[3] = {255, 165, 0};
+uint8_t Pink_LED[3] = {255, 192, 203};
+uint8_t Brown_LED[3] = {165, 42, 42};
+uint8_t Gray_LED[3] = {128, 128, 128};
+uint8_t Black_LED[3] = {0, 0, 0};
+uint8_t Yellow_Purple_LED[3] = {255, 255, 255};
 
-rmt_channel_handle_t led_chan = NULL;
+// 定义全局变量
+static uint8_t led_strip_pixels[LED_STRIP_DATA_SIZE] = {0};
+static rmt_encoder_handle_t simple_encoder = NULL;
+static rmt_channel_handle_t led_chan = NULL;
 
 static const rmt_symbol_word_t ws2812_zero = {
     .level0 = 1,
@@ -36,55 +51,6 @@ static const rmt_symbol_word_t ws2812_reset = {
     .level1 = 0,
     .duration1 = RMT_LED_STRIP_RESOLUTION_HZ / 1000000 * 50 / 2,
 };
-
-static size_t encoder_callback(const void *data, size_t data_size, size_t symbols_written, size_t symbols_free, rmt_symbol_word_t *symbols, bool *done, void *arg);
-
-/**
- * @brief     WS2812 init
- * This function initializes the RMT channel for WS2812 LED strip control.
- * It sets up the RMT TX channel configuration, creates a simple encoder,
- * and enables the RMT TX channel.
- */
-void Int_WS2812_Init(void)
-{
-    MY_LOGI("Create RMT TX channel");
-    rmt_channel_handle_t led_chan = NULL;
-    rmt_tx_channel_config_t tx_chan_config = {
-        .clk_src = RMT_CLK_SRC_DEFAULT, // select source clock
-        .gpio_num = RMT_LED_STRIP_GPIO_NUM,
-        .mem_block_symbols = 64, // increase the block size can make the LED less flickering
-        .resolution_hz = RMT_LED_STRIP_RESOLUTION_HZ,
-        .trans_queue_depth = 4, // set the number of transactions that can be pending in the background
-    };
-    rmt_new_tx_channel(&tx_chan_config, &led_chan);
-
-    MY_LOGI("Create simple callback-based encoder");
-    rmt_encoder_handle_t simple_encoder = NULL;
-    const rmt_simple_encoder_config_t simple_encoder_cfg = {
-        .callback = encoder_callback
-        // Note we don't set min_chunk_size here as the default of 64 is good enough.
-    };
-    rmt_new_simple_encoder(&simple_encoder_cfg, &simple_encoder);
-
-    MY_LOGI("Enable RMT TX channel");
-    rmt_enable(led_chan);
-}
-
-/**
- * @brief 根据传入的按键值和颜色的值，来点亮对应WLED
- *
- * @param key_value 按键值
- * @param  color_LED
- *
- * @return None
- */
-void Int_WS2812_Set_LED(Touch_Key key_value, uint8_t (*color_LED)[3])
-{
-
-    // 默认熄灭所以灯带
-    memset(color_LED, 0, sizeof(*color_LED));
-    // 点亮对应按键灯带
-}
 
 /**
  * @brief Encoder callback function for WS2812 LED strip control.
@@ -141,4 +107,113 @@ static size_t encoder_callback(const void *data, size_t data_size, size_t symbol
         *done = 1; // Indicate end of the transaction.
         return 1;  // we only wrote one symbol
     }
+}
+
+/******************************************************主业务逻辑********************************************************************************************** */
+/**
+ * @brief     Send color to PIN
+ * This function sends the color data to the LED strip PIN.
+ * It uses the RMT TX channel and the simple encoder to transmit the data.
+ *
+ * @param color_LED The color data to be sent.
+ * @param color_LED_size The size of the color data.
+ *
+ * @return None
+ */
+static void Int_WS2812_Send_Color_To_PIN(void)
+{
+
+    rmt_transmit_config_t tx_config = {
+        .loop_count = 0, // no transfer loop
+    };
+    rmt_transmit(led_chan, simple_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config);
+    rmt_tx_wait_all_done(led_chan, portMAX_DELAY);
+}
+
+
+
+
+
+/**
+ * @brief     WS2812 init
+ * This function initializes the RMT channel for WS2812 LED strip control.
+ * It sets up the RMT TX channel configuration, creates a simple encoder,
+ * and enables the RMT TX channel.
+ */
+void Int_WS2812_Init(void)
+{
+    MY_LOGI("Create RMT TX channel");
+    rmt_tx_channel_config_t tx_chan_config = {
+        .clk_src = RMT_CLK_SRC_DEFAULT, // select source clock
+        .gpio_num = RMT_LED_STRIP_GPIO_NUM,
+        .mem_block_symbols = 64, // increase the block size can make the LED less flickering
+        .resolution_hz = RMT_LED_STRIP_RESOLUTION_HZ,
+        .trans_queue_depth = 4, // set the number of transactions that can be pending in the background
+    };
+    rmt_new_tx_channel(&tx_chan_config, &led_chan);
+
+    MY_LOGI("Create simple callback-based encoder");
+    const rmt_simple_encoder_config_t simple_encoder_cfg = {
+        .callback = encoder_callback
+        // Note we don't set min_chunk_size here as the default of 64 is good enough.
+    };
+    rmt_new_simple_encoder(&simple_encoder_cfg, &simple_encoder);
+
+    MY_LOGI("Enable RMT TX channel");
+    rmt_enable(led_chan);
+}
+
+/**
+ * @brief 根据传入的按键值和颜色的值，来点亮对应W-S2812 LED
+ *
+ * @note 颜色值是一个3字节的数组，分别代表RGB三个颜色通道的亮度值
+ * @param key_value 按键值
+ * @param  color_LED 颜色值
+ * @return None
+ */
+void Int_WS2812_Set_LED_From_Key(Touch_Key key_value, uint8_t (*color_LED)[3])
+{
+
+    // 默认清空灯带数据
+    memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
+    // 点亮对应按键灯带,偏移量是3，因为WS2812灯带是3字节的RGB
+    memcpy(led_strip_pixels + key_value * 3, (*color_LED), sizeof((*color_LED)) / sizeof(uint8_t));
+    // 发送颜色值到LED灯带
+    Int_WS2812_Send_Color_To_PIN();
+}
+
+
+
+/**
+ * @brief 点亮所有LED灯带
+ * This function turns on all the LEDs in the LED strip by setting their color values to the specified color
+ * and sending the updated color data to the LED strip.
+ *
+ * @param color_LED 颜色值
+ * @return None
+ */
+void Int_WS2812_Lighting_All_LED_To_Color(uint8_t (*color_LED)[3])
+{
+    // 点亮所有LED灯带
+    for (int i = 0; i < KEY_LED_NUM; i++)
+    {
+        // 偏移量是3，因为WS2812灯带是3字节的RGB
+        memcpy(led_strip_pixels + i * 3, (*color_LED), sizeof((*color_LED)) / sizeof(uint8_t));
+    }       
+    
+    // 发送颜色值到LED灯带
+    Int_WS2812_Send_Color_To_PIN();
+}
+/**
+ * @brief 熄灭所有LED灯带
+ * This function turns off all the LEDs in the LED strip by setting their color values to zero
+ * and sending the updated color data to the LED strip.
+ *
+ *  @return None
+ */
+void Int_WS2812_All_LED_Off(void)
+{
+    // 熄灭所有LED灯带
+    Int_WS2812_Lighting_All_LED_To_Color(&Black_LED);
+
 }
