@@ -130,10 +130,6 @@ static void Int_WS2812_Send_Color_To_PIN(void)
     rmt_tx_wait_all_done(led_chan, portMAX_DELAY);
 }
 
-
-
-
-
 /**
  * @brief     WS2812 init
  * This function initializes the RMT channel for WS2812 LED strip control.
@@ -182,8 +178,6 @@ void Int_WS2812_Set_LED_From_Key(Touch_Key key_value, uint8_t (*color_LED)[3])
     Int_WS2812_Send_Color_To_PIN();
 }
 
-
-
 /**
  * @brief 点亮所有LED灯带
  * This function turns on all the LEDs in the LED strip by setting their color values to the specified color
@@ -199,8 +193,8 @@ void Int_WS2812_Lighting_All_LED_To_Color(uint8_t (*color_LED)[3])
     {
         // 偏移量是3，因为WS2812灯带是3字节的RGB
         memcpy(led_strip_pixels + i * 3, (*color_LED), sizeof((*color_LED)) / sizeof(uint8_t));
-    }       
-    
+    }
+
     // 发送颜色值到LED灯带
     Int_WS2812_Send_Color_To_PIN();
 }
@@ -215,5 +209,4 @@ void Int_WS2812_All_LED_Off(void)
 {
     // 熄灭所有LED灯带
     Int_WS2812_Lighting_All_LED_To_Color(&Black_LED);
-
 }

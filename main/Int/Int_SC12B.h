@@ -7,10 +7,9 @@
 extern "C"
 {
 #endif
-
-    typedef enum
-    {
-        KEY_0=0,
+    // 按键枚举
+typedef enum{
+        KEY_0 = 0,
         KEY_1,
         KEY_2,
         KEY_3,
@@ -25,7 +24,8 @@ extern "C"
         KEY_NO
     } Touch_Key;
 
-    void Key_Init(void);
+  
+    void Int_SC12B_Init(void);
 
 #ifdef __cplusplus
 }
