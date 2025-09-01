@@ -10,9 +10,9 @@
 #define RMT_LED_STRIP_RESOLUTION_HZ 10000000 // 10MHz resolution, 1 tick = 0.1us (led strip needs a high resolution)
 #define RMT_LED_STRIP_GPIO_NUM 6             // 根据CPU链接的端口
 // 门锁的12个按键,每个按键对应一个发光LED,每个LED占3个字节
-#define KEY_NUM 12
+#define KEY_NUMBERS 12
 // 定义LED的数量
-#define KEY_LED_NUM KEY_NUM
+#define KEY_LED_NUM KEY_NUMBERS
 // 单个LED的数据结构大小3字节（参考WS2812数据格式）
 #define SiNGLE_LED_STRIP_DATA_SIZE 3
 // 定义LED灯带的数据数组

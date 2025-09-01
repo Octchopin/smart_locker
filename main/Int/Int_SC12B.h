@@ -2,6 +2,9 @@
 #define _INT_SC12B_H_
 
 #include "debug/com_debug.h"
+#include "driver/i2c.h" // 老版本I2C驱动主要头文件
+#include "esp_err.h"    // 提供了esp_err_t类型和ESP_OK等错误码的定义，用于错误处理
+
 
 #ifdef __cplusplus
 extern "C"
