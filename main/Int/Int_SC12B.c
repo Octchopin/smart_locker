@@ -1,10 +1,6 @@
 #include "Int_SC12B.h"
 
-// 硬件配置
-#define I2C_MASTER_NUM I2C_NUM_0               // 使用I2C0控制器
-#define I2C_MASTER_SDA_IO GPIO_NUM_2           // SDA引脚号 
-#define I2C_MASTER_SCL_IO GPIO_NUM_1           // SCL引脚号 
-#define I2C_MASTER_FREQ_HZ 400000               // I2C时钟频率（400kHz）
+
 
 static esp_err_t i2c_master_init(void) {
     i2c_config_t conf = {
