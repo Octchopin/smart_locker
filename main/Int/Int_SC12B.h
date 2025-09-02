@@ -4,21 +4,25 @@
 #include "debug/com_debug.h"
 #include "driver/i2c.h" // 老版本I2C驱动主要头文件
 #include "esp_err.h"    // 提供了esp_err_t类型和ESP_OK等错误码的定义，用于错误处理
-
+#include "driver/gpio.h"
 
 // 硬件配置
-#define SC_INT_PIN GPIO_NUM_0  // 中断引脚号
-#define SC_I2C_MASTER_NUM  I2C_NUM_0               // 使用I2C0控制器
-#define SC_I2C_MASTER_SDA_IO  GPIO_NUM_2           // SDA引脚号
-#define SC_I2C_MASTER_SCL_IO  GPIO_NUM_1           // SCL引脚号
-#define SC_I2C_MASTER_FREQ_HZ  400000               // I2C时钟频率（400kHz）
+#define SC_INT_PIN GPIO_NUM_0           // 中断引脚号
+#define SC_I2C_MASTER_NUM I2C_NUM_0     // 使用I2C0控制器
+#define SC_I2C_MASTER_SDA_IO GPIO_NUM_2 // SDA引脚号
+#define SC_I2C_MASTER_SCL_IO GPIO_NUM_1 // SCL引脚号
+#define SC_I2C_MASTER_FREQ_HZ 400000    // I2C时钟频率（400kHz）
 
+
+
+#define ESP_INTR_FLAG_DEFAULT 0
 #ifdef __cplusplus
 extern "C"
 {
 #endif
     // 按键枚举
-typedef enum{
+    typedef enum
+    {
         KEY_0 = 0,
         KEY_1,
         KEY_2,
@@ -34,7 +38,6 @@ typedef enum{
         KEY_NO
     } Touch_Key;
 
-  
     void Int_SC12B_Init(void);
 
 #ifdef __cplusplus

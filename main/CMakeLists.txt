@@ -7,6 +7,7 @@ idf_component_register(SRCS
                     INCLUDE_DIRS 
                      "com"
                      "Int"
-
+                    
+                   REQUIRES driver
                      
                     )
