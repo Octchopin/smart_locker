@@ -2,16 +2,22 @@
 
 /**
  * @brief  SC12B中断处理函数
- * 
+ *
  * @param  arg    中断处理函数的参数
- * 
+ *
  */
- static void IRAM_ATTR sc12b_int_handler(void* arg)
+static void IRAM_ATTR sc12b_int_handler(void *arg)
 {
-    // 清除中断标志
-    gpio_intr_disable(SC_INT_PIN);
-    // 实际处理逻辑...
-    gpio_intr_enable(SC_INT_PIN);
+    uint32_t gpio_num = (uint32_t)arg;
+    if (gpio_num == SC_INT_PIN)
+    {
+        /* code */
+        MY_LOGI("SC12B interrupt occurred");
+        // 清除中断标志
+        gpio_intr_disable(gpio_num);
+        // 实际处理逻辑...
+        gpio_intr_enable(gpio_num);
+    }
 }
 /**
  * @brief   I2C0主机初始化
@@ -58,7 +64,7 @@ static esp_err_t i2c_master_init(void)
  *
  */
 static void gpio_interrupt_init(void)
-{ 
+{
     // INT：触摸信号输出指示端口。 有按键时输出高电平， 无按键时输出低电平。
     // 初始化引脚局部变量
     gpio_config_t io_conf = {0};
@@ -75,26 +81,67 @@ static void gpio_interrupt_init(void)
     // 配置GPIO
     gpio_config(&io_conf);
 
-
     // 安装中断服务
-    gpio_install_isr_service(0); 
-     // 注册中断处理函数
+    gpio_install_isr_service(0);
+    // 注册中断处理函数
     gpio_isr_handler_add(SC_INT_PIN, sc12b_int_handler, NULL);
 
-    //install gpio isr service
+    // install gpio isr service
     gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
-    //hook isr handler for specific gpio pin    UNTODO: check return value
-    gpio_isr_handler_add(SC_INT_PIN, sc12b_int_handler, (void*) SC_INT_PIN);
-   
-
+    // hook isr handler for specific gpio pin    UNTODO: check return value
+    gpio_isr_handler_add(SC_INT_PIN, sc12b_int_handler, (void *)SC_INT_PIN);
+    // 中断初始化成功
+    MY_LOGI("GPIO interrupt initialized successfully");
 }
 
+
+
+
+
+
+
+
+
+/*************************************业务逻辑***************************************** */
+
+
+/**
+ * @brief  根据设备地址和寄存器地址读取SC12B寄存器
+ * @param  reg_adr    寄存器地址
+ * @param  data   存储读取数据的缓冲区指针
+ * @param  len    读取数据的长度
+ * @return 读取到的数据
+ */
+uint8_t Int_SC12B_ReadRegister(uint8_t reg_adr,uint8_t *data,uint8_t len)
+{
+    
+   i2c_master_write_read_device(SC_I2C_MASTER_NUM, SC_I2C_SLAVE_ADDR,&reg_adr, 1, data, len, portMAX_DELAY);
+    return data;
+    
+}
+
+/**
+ * @brief  根据设备地址和寄存器地址写入SC12B寄存器
+ * @param  reg_adr    寄存器地址
+ * @param  data   写入的数据
+ */
+void Int_SC12B_WriteRegister(uint8_t reg_adr, uint8_t data)
+{
+    uint8_t write_buffer[2];
+    write_buffer[0] = reg_adr;
+    write_buffer[1] = data;
+    i2c_master_write_to_device(SC_I2C_MASTER_NUM, SC_I2C_SLAVE_ADDR, write_buffer,sizeof(write_buffer), portMAX_DELAY);
+}
+
+
+/**
+ * @brief  SC12B初始化
+ *
+ *
+ */
 void Int_SC12B_Init(void)
 {
-    // 初始化按键
-    i2c_master_init();
-    // 初始化中断的引脚
-    gpio_interrupt_init();
-
-
+    i2c_master_init();  // 1.总线初始化
+    vTaskDelay(300 / portTICK_PERIOD_MS); // 2.等待300ms传感器上电完成
+    gpio_interrupt_init(); // 3.最后启用中断
 }

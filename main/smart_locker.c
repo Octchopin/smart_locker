@@ -19,7 +19,9 @@ void app_main(void)
     Int_WTN6_SetCmd(30);
     MY_LOGD("LED模块测试");
     Int_WS2812_Init();
-
+     /*测试中断*/
+    Int_SC12B_Init();
+    
     while (1)
     {
         Int_WS2812_Set_LED_From_Key(KEY_1, &Red_LED);

@@ -7,7 +7,7 @@
 #include "driver/gpio.h"
 
 // 硬件配置
-#define SC_INT_PIN GPIO_NUM_0           // 中断引脚号
+#define SC_INT_PIN  GPIO_NUM_0          // 中断引脚号
 #define SC_I2C_MASTER_NUM I2C_NUM_0     // 使用I2C0控制器
 #define SC_I2C_MASTER_SDA_IO GPIO_NUM_2 // SDA引脚号
 #define SC_I2C_MASTER_SCL_IO GPIO_NUM_1 // SCL引脚号
@@ -16,6 +16,9 @@
 
 
 #define ESP_INTR_FLAG_DEFAULT 0
+
+
+#define SC_I2C_SLAVE_ADDR  0x42
 #ifdef __cplusplus
 extern "C"
 {
