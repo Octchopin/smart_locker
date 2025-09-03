@@ -44,6 +44,8 @@ static const rmt_symbol_word_t ws2812_one = {
     .duration1 = 0.3 * RMT_LED_STRIP_RESOLUTION_HZ / 1000000, // T1L=0.3us
 };
 
+
+
 // reset defaults to 50uS
 static const rmt_symbol_word_t ws2812_reset = {
     .level0 = 1,
