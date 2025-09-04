@@ -104,33 +104,27 @@ static void gpio_interrupt_init(void)
 
 /*************************************业务逻辑***************************************** */
 
-
+#define SC_I2C_SLAVE_ADDR  0x42
 /**
  * @brief  根据设备地址和寄存器地址读取SC12B寄存器
- * @param  reg_adr    寄存器地址
- * @param  data   存储读取数据的缓冲区指针
- * @param  len    读取数据的长度
+ * @param  reg    寄存器地址
  * @return 读取到的数据
  */
-uint8_t Int_SC12B_ReadRegister(uint8_t reg_adr,uint8_t *data,uint8_t len)
+ uint8_t Int_SC12B_ReadRegsiter(uint8_t reg)
 {
-    
-   i2c_master_write_read_device(SC_I2C_MASTER_NUM, SC_I2C_SLAVE_ADDR,&reg_adr, 1, data, len, portMAX_DELAY);
+    uint8_t data = 0;
+    i2c_master_read_from_device(SC_I2C_MASTER_NUM, SC_I2C_SLAVE_ADDR, &data, 1, portMAX_DELAY);
     return data;
-    
 }
 
 /**
  * @brief  根据设备地址和寄存器地址写入SC12B寄存器
- * @param  reg_adr    寄存器地址
+ * @param  reg    寄存器地址
  * @param  data   写入的数据
  */
-void Int_SC12B_WriteRegister(uint8_t reg_adr, uint8_t data)
+void Int_SC12B_WriteRegsiter(uint8_t reg, uint8_t data)
 {
-    uint8_t write_buffer[2];
-    write_buffer[0] = reg_adr;
-    write_buffer[1] = data;
-    i2c_master_write_to_device(SC_I2C_MASTER_NUM, SC_I2C_SLAVE_ADDR, write_buffer,sizeof(write_buffer), portMAX_DELAY);
+    i2c_master_write_to_device(SC_I2C_MASTER_NUM, SC_I2C_SLAVE_ADDR, &data, 1, portMAX_DELAY);
 }
 
 
@@ -145,3 +139,4 @@ void Int_SC12B_Init(void)
     vTaskDelay(300 / portTICK_PERIOD_MS); // 2.等待300ms传感器上电完成
     gpio_interrupt_init(); // 3.最后启用中断
 }
+

@@ -10,7 +10,9 @@
 #include "debug/com_debug.h"
 #include "Int_WTN6.h"
 #include "Int_WS2812.h"
+#include "Int_SC12B.h"
 
+TaskHandle_t App_IO_read_Handle = NULL;
 void app_main(void)
 {
     MY_LOGD("语音模块测试");
@@ -21,29 +23,7 @@ void app_main(void)
     Int_WS2812_Init();
      /*测试中断*/
     Int_SC12B_Init();
-    
-    while (1)
-    {
-        Int_WS2812_Set_LED_From_Key(KEY_1, &Red_LED);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        Int_WS2812_Set_LED_From_Key(KEY_2, &Green_LED);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        Int_WS2812_Set_LED_From_Key(KEY_3, &Blue_LED);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        Int_WS2812_Set_LED_From_Key(KEY_4, &Yellow_LED);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        Int_WS2812_Set_LED_From_Key(KEY_5, &Cyan_LED);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        Int_WS2812_Set_LED_From_Key(KEY_6, &Purple_LED);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        Int_WS2812_Set_LED_From_Key(KEY_7, &Orange_LED);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        Int_WS2812_Lighting_All_LED_To_Color(&White_LED);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        Int_WS2812_All_LED_Off();
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-    }
-    // UNTODO: 添加返回
-    // return; /*如果添加返回则主任务相当于被kill了*/
+    /*创建IO任务用于读写IO */
+    xTaskCreate(App_IO_read_Task, "App_IO_read_Task", 2048, NULL, 5, &App_IO_read_Handle);
+    return; /*如果添加返回则主任务相当于被kill了*/
 }
