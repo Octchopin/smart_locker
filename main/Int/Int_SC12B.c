@@ -11,12 +11,15 @@ static void IRAM_ATTR sc12b_int_handler(void *arg)
     uint32_t gpio_num = (uint32_t)arg;
     if (gpio_num == SC_INT_PIN)
     {
-        /* code */
-        MY_LOGI("SC12B interrupt occurred");
+
         // 清除中断标志
         gpio_intr_disable(gpio_num);
-        // 实际处理逻辑...
-        gpio_intr_enable(gpio_num);
+        // 读取中断标志
+        MY_LOGI("按键中断产生，按键被按下");
+        // 通知APP任务处理按键事件
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        vTaskNotifyGiveFromISR(App_IO_read_Handle, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
 /**
@@ -94,23 +97,15 @@ static void gpio_interrupt_init(void)
     MY_LOGI("GPIO interrupt initialized successfully");
 }
 
-
-
-
-
-
-
-
-
 /*************************************业务逻辑***************************************** */
 
-#define SC_I2C_SLAVE_ADDR  0x42
+#define SC_I2C_SLAVE_ADDR 0x42
 /**
  * @brief  根据设备地址和寄存器地址读取SC12B寄存器
  * @param  reg    寄存器地址
  * @return 读取到的数据
  */
- uint8_t Int_SC12B_ReadRegsiter(uint8_t reg)
+uint8_t Int_SC12B_ReadRegsiter(uint8_t reg)
 {
     uint8_t data = 0;
     i2c_master_read_from_device(SC_I2C_MASTER_NUM, SC_I2C_SLAVE_ADDR, &data, 1, portMAX_DELAY);
@@ -127,16 +122,45 @@ void Int_SC12B_WriteRegsiter(uint8_t reg, uint8_t data)
     i2c_master_write_to_device(SC_I2C_MASTER_NUM, SC_I2C_SLAVE_ADDR, &data, 1, portMAX_DELAY);
 }
 
-
 /**
  * @brief  SC12B初始化
- *
- *
+ * @note   该函数初始化I2C总线，等待传感器上电完成，然后配置中断引脚和寄存器
+ * @return void
  */
+
+
 void Int_SC12B_Init(void)
 {
-    i2c_master_init();  // 1.总线初始化
+    i2c_master_init();                    // 1.总线初始化
     vTaskDelay(300 / portTICK_PERIOD_MS); // 2.等待300ms传感器上电完成
-    gpio_interrupt_init(); // 3.最后启用中断
+    gpio_interrupt_init();                // 3.最后启用中断
+    // 根据手册设置灵敏度寄存器，值越大灵敏度越高，分别设置两个寄存器对应12个按键
+    Int_SC12B_WriteRegsiter(SC12B_SenSet0, SC12B_SENSITIVITY);
+    Int_SC12B_WriteRegsiter(SC12B_SenSet1, SC12B_SENSITIVITY);
+    MY_LOGI("SC12B initialized successfully");
 }
 
+/**
+ * @brief 读取触摸Key值
+ * @return Touch_Key 枚举类型的按键值
+ *
+ */
+
+Touch_Key Int_SC12B_Read_TouchKey(void)
+{
+    // 分别读取SC12B两个输出寄存器的值
+    uint8_t reg_value = Int_SC12B_ReadRegsiter(SC_REG_Output1);  // 读取寄存器值
+    uint8_t reg_value2 = Int_SC12B_ReadRegsiter(SC_REG_Output2); // 读取寄存器值
+    // 拼接两个寄存器的值,前一个寄存器高位到低位分别对应KEY0~KEY7,后一个寄存器高4位分别对应KEY8~KEY#,合成一个16位值，最低位对应Key0,最高位对应Key#
+    uint16_t value = (reg_value2 << 0) |(reg_value << 4) ;
+ // 遍历低12位值，如果某个键被按下，则返回对应的键值
+    for (int i = 11; i >= 0; i--)
+    {
+        if (value & (1 << i))
+        {
+            return (Touch_Key)(11-i); // 返回对应的按键枚举值
+        }
+    }
+
+    return KEY_NO;
+}

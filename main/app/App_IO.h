@@ -3,13 +3,15 @@
 
 #include "debug/com_debug.h"
 #include "Int_SC12B.h"
-
+#include "esp_task.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-
+    void App_IO_Init(void);
+    void App_IO_read_Task(void *pvParameters);
 
 #ifdef __cplusplus
 }

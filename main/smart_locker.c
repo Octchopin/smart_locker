@@ -11,7 +11,8 @@
 #include "Int_WTN6.h"
 #include "Int_WS2812.h"
 #include "Int_SC12B.h"
-
+#include "App_IO.h"
+// 任务句柄TCB
 TaskHandle_t App_IO_read_Handle = NULL;
 void app_main(void)
 {
@@ -21,9 +22,8 @@ void app_main(void)
     Int_WTN6_SetCmd(30);
     MY_LOGD("LED模块测试");
     Int_WS2812_Init();
-     /*测试中断*/
-    Int_SC12B_Init();
+    /*测试中断*/
+    App_IO_Init();
     /*创建IO任务用于读写IO */
-    xTaskCreate(App_IO_read_Task, "App_IO_read_Task", 2048, NULL, 5, &App_IO_read_Handle);
-    return; /*如果添加返回则主任务相当于被kill了*/
+    xTaskCreate(App_IO_read_Task, "App_IO_read_Task", 2048, NULL, 3, &App_IO_read_Handle);
 }
