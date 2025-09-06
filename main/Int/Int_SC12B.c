@@ -105,7 +105,7 @@ static void gpio_interrupt_init(void)
  * @param  reg    寄存器地址
  * @return 读取到的数据
  */
-uint8_t Int_SC12B_ReadRegsiter(uint8_t reg)
+static uint8_t Int_SC12B_ReadRegsiter(uint8_t reg)
 {
     uint8_t data = 0;
     i2c_master_read_from_device(SC_I2C_MASTER_NUM, SC_I2C_SLAVE_ADDR, &data, 1, portMAX_DELAY);
@@ -117,17 +117,18 @@ uint8_t Int_SC12B_ReadRegsiter(uint8_t reg)
  * @param  reg    寄存器地址
  * @param  data   写入的数据
  */
-void Int_SC12B_WriteRegsiter(uint8_t reg, uint8_t data)
+static void Int_SC12B_WriteRegsiter(uint8_t reg, uint8_t data)
 {
     i2c_master_write_to_device(SC_I2C_MASTER_NUM, SC_I2C_SLAVE_ADDR, &data, 1, portMAX_DELAY);
 }
+
+/*********************************实际暴漏的接口业务代码************************************************** */
 
 /**
  * @brief  SC12B初始化
  * @note   该函数初始化I2C总线，等待传感器上电完成，然后配置中断引脚和寄存器
  * @return void
  */
-
 void Int_SC12B_Init(void)
 {
     i2c_master_init();                    // 1.总线初始化
