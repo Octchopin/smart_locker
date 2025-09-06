@@ -128,15 +128,14 @@ void Int_SC12B_WriteRegsiter(uint8_t reg, uint8_t data)
  * @return void
  */
 
-
 void Int_SC12B_Init(void)
 {
     i2c_master_init();                    // 1.总线初始化
     vTaskDelay(300 / portTICK_PERIOD_MS); // 2.等待300ms传感器上电完成
     gpio_interrupt_init();                // 3.最后启用中断
     // 根据手册设置灵敏度寄存器，值越大灵敏度越高，分别设置两个寄存器对应12个按键
-    Int_SC12B_WriteRegsiter(SC12B_SenSet0, SC12B_SENSITIVITY);
-    Int_SC12B_WriteRegsiter(SC12B_SenSet1, SC12B_SENSITIVITY);
+    Int_SC12B_WriteRegsiter(SC12B_SenSet0, SC12B_SET_SENSITIVITY);
+    Int_SC12B_WriteRegsiter(SC12B_SenSet1, SC12B_SET_SENSITIVITY);
     MY_LOGI("SC12B initialized successfully");
 }
 
@@ -148,19 +147,53 @@ void Int_SC12B_Init(void)
 
 Touch_Key Int_SC12B_Read_TouchKey(void)
 {
+    Touch_Key key = KEY_NO;
     // 分别读取SC12B两个输出寄存器的值
     uint8_t reg_value = Int_SC12B_ReadRegsiter(SC_REG_Output1);  // 读取寄存器值
     uint8_t reg_value2 = Int_SC12B_ReadRegsiter(SC_REG_Output2); // 读取寄存器值
     // 拼接两个寄存器的值,前一个寄存器高位到低位分别对应KEY0~KEY7,后一个寄存器高4位分别对应KEY8~KEY#,合成一个16位值，最低位对应Key0,最高位对应Key#
-    uint16_t value = (reg_value2 << 0) |(reg_value << 4) ;
- // 遍历低12位值，如果某个键被按下，则返回对应的键值
-    for (int i = 11; i >= 0; i--)
+    uint16_t value = (reg_value2 >> 4) | (reg_value << 4);
+    switch (value)
     {
-        if (value & (1 << i))
-        {
-            return (Touch_Key)(11-i); // 返回对应的按键枚举值
-        }
+    case 1 << 11:
+        key = KEY_0;
+        break;
+    case 1 << 10:
+        key = KEY_1;
+        break;
+    case 1 << 9:
+        key = KEY_2;
+        break;
+    case 1 << 8:
+        key = KEY_3;
+        break;
+    case 1 << 7:
+        key = KEY_4;
+        break;
+    case 1 << 6:
+        key = KEY_5;
+        break;
+    case 1 << 5:
+        key = KEY_6;
+        break;
+    case 1 << 4:
+        key = KEY_7;
+        break;
+    case 1 << 3:
+        key = KEY_8;
+        break;
+    case 1 << 2:
+        key = KEY_9;
+        break;
+    case 1 << 1:
+        key = KEY_SHARP;
+        break;
+    case 1 << 0:
+        key = KEY_M;
+        break;
+    default:
+        key = KEY_NO;
     }
 
-    return KEY_NO;
+    return key;
 }

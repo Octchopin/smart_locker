@@ -16,18 +16,15 @@ extern TaskHandle_t App_IO_read_Handle; // 声明外部任务句柄
 #define SC_I2C_MASTER_SCL_IO GPIO_NUM_1 // SCL引脚号
 #define SC_I2C_MASTER_FREQ_HZ 400000    // I2C时钟频率（400kHz）
 #define ESP_INTR_FLAG_DEFAULT 0
-//SC12B设备地址
+// SC12B设备地址
 #define SC_I2C_SLAVE_ADDR 0x42
-//SC12B寄存器地址
-#define SC12B_SENSITIVITY 0x25
+// SC12B寄存器地址
 #define SC12B_SenSet0 0x00
 #define SC12B_SenSet1 0x01
 #define SC_REG_Output1 0x08
 #define SC_REG_Output2 0x09
-
-
-
-
+// set sensitivity
+#define SC12B_SET_SENSITIVITY 0x25
 
 #ifdef __cplusplus
 extern "C"
