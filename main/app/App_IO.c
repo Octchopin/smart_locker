@@ -6,8 +6,17 @@ void App_IO_Init(void)
     Int_SC12B_Init();
 }
 
-void App_IO_read_Task(void *pvParameters)
+typedef enum
 {
+  FREE,
+  INPUTTING,
+  COMPLETED
+  
+} IO_Status;
+void App_IO_read_Task(void *pvParameters)
+{  
+    IO_Status Status = FREE;
+
     while (1)
     {
         // 任务通知
@@ -22,5 +31,7 @@ void App_IO_read_Task(void *pvParameters)
                 MY_LOGI("触摸按键[%d]键被按下", KeyValue);
             }
         }
+
+
     }
 }
