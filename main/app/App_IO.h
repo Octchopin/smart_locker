@@ -10,6 +10,16 @@ extern "C"
 {
 #endif
 
+    // 状态枚举
+    typedef enum
+    {
+        STATE_IDLE = 0,  // 空闲等待输入
+        STATE_INPUT,     // 输入中
+        STATE_VERIFY,    // 验证密码
+        STATE_UNLOCKED,  // 解锁成功
+        STATE_LOCKED_ERR // 错误锁定
+    } LockState;
+
     void App_IO_Init(void);
     void App_IO_read_Task(void *pvParameters);
 
