@@ -13,7 +13,7 @@
 #include "Int_SC12B.h"
 #include "App_IO.h"
 // 任务句柄TCB
-TaskHandle_t App_IO_read_Handle = NULL;
+TaskHandle_t App_IO_KeyScan_Handle = NULL;
 void app_main(void)
 {
     MY_LOGD("语音模块测试");
@@ -25,5 +25,5 @@ void app_main(void)
     /*测试中断*/
     App_IO_Init();
     /*创建IO任务用于读写IO */
-    xTaskCreate(App_IO_read_Task, "App_IO_read_Task", 2048, NULL, 3, &App_IO_read_Handle);
+    xTaskCreate(App_IO_KeyScan_Task, "App_IO_KeyScan_Task", 2048, NULL, 3, &App_IO_KeyScan_Handle);
 }
