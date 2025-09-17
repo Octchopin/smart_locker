@@ -2,8 +2,6 @@
 #include <string.h> // strcmp 用
 #include <stdio.h>  // printf 用
 
-#define PASSWORD_LEN 4
-#define MAX_FAIL_CNT 3
 
 // 正确密码
 static const char correct_password[PASSWORD_LEN + 1] = "1234";
@@ -22,7 +20,7 @@ void App_IO_Init(void)
     Int_SC12B_Init(); // 初始化触摸IO
 }
 
-void App_IO_read_Task(void *pvParameters)
+void App_IO_KeyScan_Task(void *pvParameters)
 {
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
@@ -31,6 +29,12 @@ void App_IO_read_Task(void *pvParameters)
         if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
         {
             Touch_Key KeyValue = Int_SC12B_Read_TouchKey();
+
+            if (KeyValue == KEY_NO)
+            {
+                /* code */
+            }
+            
 
             switch (current_state)
             {

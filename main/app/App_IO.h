@@ -10,6 +10,11 @@ extern "C"
 {
 #endif
 
+//密码 长度
+#define PASSWORD_LEN 4
+// 验证密码最大失败次数
+#define MAX_FAIL_CNT 3
+
     // 状态枚举
     typedef enum
     {
@@ -21,7 +26,7 @@ extern "C"
     } LockState;
 
     void App_IO_Init(void);
-    void App_IO_read_Task(void *pvParameters);
+    void App_IO_KeyScan_Task(void *pvParameters);
 
 #ifdef __cplusplus
 }

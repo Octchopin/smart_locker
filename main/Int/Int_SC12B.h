@@ -7,8 +7,6 @@
 #include "driver/gpio.h"
 #include "esp_task.h"
 
-extern TaskHandle_t App_IO_read_Handle; // 声明外部任务句柄
-
 // 硬件配置
 #define SC_INT_PIN GPIO_NUM_0           // 中断引脚号
 #define SC_I2C_MASTER_NUM I2C_NUM_0     // 使用I2C0控制器
@@ -48,7 +46,7 @@ extern "C"
         KEY_NO,
 
     } Touch_Key;
-
+    extern TaskHandle_t App_IO_KeyScan_Handle; // 声明外部任务句柄
     void Int_SC12B_Init(void);
     Touch_Key Int_SC12B_Read_TouchKey(void);
 

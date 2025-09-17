@@ -17,7 +17,7 @@ static void IRAM_ATTR sc12b_int_handler(void *arg)
         MY_LOGI("按键中断产生，按键被按下");
         // 通知APP任务处理按键事件
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        vTaskNotifyGiveFromISR(App_IO_read_Handle, &xHigherPriorityTaskWoken);
+        vTaskNotifyGiveFromISR(App_IO_KeyScan_Handle, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
