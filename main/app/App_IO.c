@@ -2,7 +2,6 @@
 #include <string.h> // strcmp 用
 #include <stdio.h>  // printf 用
 
-
 // 正确密码
 static const char correct_password[PASSWORD_LEN + 1] = "1234";
 
@@ -32,19 +31,31 @@ void App_IO_KeyScan_Task(void *pvParameters)
 
             if (KeyValue == KEY_NO)
             {
-                /* code */
+                if (current_state == STATE_IDLE)
+                {
+                    continue; // 忽略空闲时的无按键
+                }
             }
-            
 
             switch (current_state)
             {
             case STATE_IDLE:
+
                 if (KeyValue >= KEY_0 && KeyValue <= KEY_9)
                 {
+
+                    // 清空输入缓冲密码
+                    memset(input_buf, 0, sizeof(input_buf));
                     input_len = 0;
                     input_buf[input_len++] = '0' + (KeyValue - KEY_0);
                     current_state = STATE_INPUT;
                     MY_LOGI("开始输入密码");
+                }
+                else
+                {
+                    // todo 其他按键的处理
+                    // 可以用特殊的按键长按来进入管理员模式修改密码
+                    MY_LOGI("您按下的按键非数字,请重新输入\n");
                 }
                 break;
 
@@ -96,7 +107,8 @@ void App_IO_KeyScan_Task(void *pvParameters)
                         MY_LOGI("请重新输入密码\n");
                     }
                 }
-                input_len = 0; // 重置输入
+                memset(input_buf, 0, sizeof(input_buf));
+                input_len = 0;
                 break;
 
             case STATE_UNLOCKED:
