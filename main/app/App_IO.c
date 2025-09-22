@@ -19,6 +19,17 @@ void App_IO_Init(void)
     Int_SC12B_Init(); // 初始化触摸IO
 }
 
+static void APP_IO_Input_Handle(void)
+{   MY_LOGI("开始处理输入的密码!!!");
+    printf("输入的密码是：%.*s\n", input_len, input_buf);
+    if (input_buf[0]==0&&input_buf[1]==1)
+    {
+        MY_LOGI("设置密码\n");
+    }
+  
+    
+    
+}
 void App_IO_KeyScan_Task(void *pvParameters)
 {
     TickType_t xLastWakeTime = xTaskGetTickCount();
@@ -40,47 +51,31 @@ void App_IO_KeyScan_Task(void *pvParameters)
             switch (current_state)
             {
             case STATE_IDLE:
+            {
 
-                if (KeyValue >= KEY_0 && KeyValue <= KEY_9)
-                {
-
-                    // 清空输入缓冲密码
-                    memset(input_buf, 0, sizeof(input_buf));
-                    input_len = 0;
-                    input_buf[input_len++] = '0' + (KeyValue - KEY_0);
-                    current_state = STATE_INPUT;
-                    MY_LOGI("开始输入密码");
-                }
-                else
-                {
-                    // todo 其他按键的处理
-                    // 可以用特殊的按键长按来进入管理员模式修改密码
-                    MY_LOGI("您按下的按键非数字,请重新输入\n");
-                }
-                break;
+                // 清空输入缓冲密码
+                memset(input_buf, 0, sizeof(input_buf));
+                input_len = 0;
+                current_state = STATE_INPUT;
+                MY_LOGI("开始输入密码");
+            }
+            break;
 
             case STATE_INPUT:
                 if (KeyValue >= KEY_0 && KeyValue <= KEY_9)
                 {
-                    if (input_len < PASSWORD_LEN)
-                    {
-                        input_buf[input_len++] = '0' + (KeyValue - KEY_0);
-                    }
-                    else
-                    {
-                        MY_LOGI("⚠️ 已达到最大输入长度\n");
-                    }
+
+                    input_buf[input_len++] = '0' + (KeyValue - KEY_0);
                 }
-                else if (KeyValue == KEY_M) // 删除键
+                else if (KeyValue == KEY_M) // 无效输入键
                 {
-                    if (input_len > 0)
-                    {
-                        input_len--;
-                    }
+                    MY_LOGI("无效输入");
+                    current_state = STATE_IDLE;
                 }
                 else if (KeyValue == KEY_SHARP) // 确认键
                 {
                     input_buf[input_len] = '\0';
+                    APP_IO_Input_Handle();
                     current_state = STATE_VERIFY;
                 }
                 break;
