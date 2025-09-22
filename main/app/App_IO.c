@@ -100,6 +100,7 @@ void App_IO_KeyScan_Task(void *pvParameters)
                 break;
 
             case STATE_VERIFY:
+                // 如果是正常输入密码而非指令验证完就是进入验证状态，否则是指令
                 if (strcmp(input_buf, correct_password) == 0)
                 {
                     MY_LOGI("✅ 密码正确，解锁成功\n");
