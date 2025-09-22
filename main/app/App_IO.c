@@ -20,15 +20,34 @@ void App_IO_Init(void)
 }
 
 static void APP_IO_Input_Handle(void)
-{   MY_LOGI("开始处理输入的密码!!!");
+{
+    MY_LOGI("开始处理输入的密码!!!");
     printf("输入的密码是：%.*s\n", input_len, input_buf);
-    if (input_buf[0]==0&&input_buf[1]==1)
+    if (!(input_len >= PASSWORD_LEN || input_len == 2))
     {
-        MY_LOGI("设置密码\n");
+        MY_LOGI("无效输入\n");
+        return;
     }
-  
-    
-    
+    if (input_buf[0] == '0' && input_buf[1] == '1')
+    {
+        // 添加密码
+        MY_LOGI("添加密码成功");
+    }
+    else if (input_buf[0] == '0' && input_buf[1] == '2')
+    {
+        // 删除密码
+        MY_LOGI("删除密码成功");
+    }
+    else if (input_buf[0] == '0' && input_buf[1] == '3')
+    {
+        // 指纹
+        MY_LOGI("指纹识别成功");
+    }
+    else if (input_buf[0] == '0' && input_buf[1] == '4')
+    {
+        // OTA升级
+        MY_LOGI("OTA升级成功");
+    }
 }
 void App_IO_KeyScan_Task(void *pvParameters)
 {
