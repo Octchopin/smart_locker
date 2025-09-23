@@ -51,7 +51,22 @@ static void APP_IO_Input_Handle(void)
     }
     else if (input_len >= PASSWORD_LEN)
     {
-        MY_LOGI("验证密码\n");
+
+        if (input_handle_state == VERIFY_PWD)
+        {
+            MY_LOGI("验证密码\n");
+            MY_LOGI("verifing pwd is %.*s\n", input_len, input_buf);
+        }
+        else if (input_handle_state == ADD_PWD)
+        {
+            MY_LOGI("添加密码\n");
+            MY_LOGI("add pwd is %.*s\n", input_len, input_buf);
+        }
+        else if (input_handle_state == DEL_PWD)
+        {
+            MY_LOGI("删除密码\n");
+            MY_LOGI("del pwd is %.*s\n", input_len, input_buf);
+        }
     }
 }
 void App_IO_KeyScan_Task(void *pvParameters)
