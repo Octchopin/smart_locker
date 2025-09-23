@@ -16,12 +16,7 @@
 TaskHandle_t App_IO_KeyScan_Handle = NULL;
 void app_main(void)
 {
-    MY_LOGD("语音模块测试");
-    /*初始化*/
-    Int_WTN6_Init();
-    Int_WTN6_SetCmd(30);
-    MY_LOGD("LED模块测试");
-    Int_WS2812_Init();
+
     /*测试中断*/
     App_IO_Init();
     /*创建IO任务用于读写IO */

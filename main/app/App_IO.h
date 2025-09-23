@@ -4,6 +4,8 @@
 #include "debug/com_debug.h"
 #include "Int_SC12B.h"
 #include "esp_task.h"
+#include "Int_WS2812.h"
+#include "Int_WTN6.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -33,6 +35,9 @@ extern "C"
 
     void App_IO_Init(void);
     void App_IO_KeyScan_Task(void *pvParameters);
+    void App_IO_AddPwd(void);
+    void App_IO_DelPwd(void);
+    void App_IO_VerifyPwd(void);
 
 #ifdef __cplusplus
 }

@@ -148,7 +148,7 @@ void Int_SC12B_Init(void)
 Touch_Key Int_SC12B_Read_TouchKey(void)
 {
     Touch_Key key = KEY_NO;
-    if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
+    if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(5000)))
     {
         // 分别读取SC12B两个输出寄存器的值
         uint8_t reg_value = Int_SC12B_ReadRegsiter(SC_REG_Output1);  // 读取寄存器值
