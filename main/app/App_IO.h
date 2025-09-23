@@ -10,20 +10,25 @@ extern "C"
 {
 #endif
 
-//密码 长度
+// 密码 长度
 #define PASSWORD_LEN 4
 // 验证密码最大失败次数
 #define MAX_FAIL_CNT 3
+#define INSTRUCTION_LEN 2
 
     // 状态枚举
     typedef enum
     {
-        STATE_IDLE = 0,  // 空闲等待输入
-        STATE_INPUT,     // 输入中
-        STATE_VERIFY,    // 验证密码
-        STATE_UNLOCKED,  // 解锁成功
-        STATE_LOCKED_ERR // 错误锁定
-    } LockState;
+        STATE_IDLE = 0, // 空闲等待输入
+        STATE_INPUTING, // 输入中
+    } Input_status_t;
+    // 输入状态枚举
+    typedef enum
+    {
+        ADD_PWD = 0, // 添加密码
+        DEL_PWD,     // 删除密码
+        VERIFY_PWD,  // 验证密码
+    } Input_handle_status_t;
 
     void App_IO_Init(void);
     void App_IO_KeyScan_Task(void *pvParameters);

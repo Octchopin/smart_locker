@@ -1,18 +1,13 @@
 #include "App_IO.h"
 #include <string.h> // strcmp 用
 #include <stdio.h>  // printf 用
-
-// 正确密码
-static const char correct_password[PASSWORD_LEN + 1] = "1234";
-
 // 输入缓冲
 static char input_buf[PASSWORD_LEN + 1];
 static uint8_t input_len = 0;
-
-// 失败计数
-static uint8_t fail_cnt = 0;
+// 输入处理状态
+static Input_handle_status_t input_handle_state = VERIFY_PWD;
 // 当前状态
-static LockState current_state = STATE_IDLE;
+static Input_status_t current_state = STATE_IDLE;
 
 void App_IO_Init(void)
 {
@@ -22,36 +17,50 @@ void App_IO_Init(void)
 static void APP_IO_Input_Handle(void)
 {
     MY_LOGI("开始处理输入的密码!!!");
-    printf("输入的密码是：%.*s\n", input_len, input_buf);
-    if (!(input_len >= PASSWORD_LEN || input_len == 2))
+    MY_LOGI("输入的密码是：%.*s\n", input_len, input_buf);
+    if (!(input_len >= PASSWORD_LEN || input_len == INSTRUCTION_LEN))
     {
         MY_LOGI("无效输入\n");
         return;
     }
-    if (input_buf[0] == '0' && input_buf[1] == '1')
+    // 指令逻辑业务分支
+    if (input_len == INSTRUCTION_LEN)
     {
-        // 添加密码
-        MY_LOGI("添加密码成功");
+
+        if (input_buf[0] == '0')
+        {
+            if (input_buf[0] == '0' && input_buf[1] == '1')
+            {
+                // 添加密码
+                MY_LOGI("添加密码\n");
+                // 指令状态转换
+                input_handle_state = ADD_PWD;
+            }
+            if (input_buf[0] == '0' && input_buf[1] == '2')
+            {
+                // 删除密码
+                MY_LOGI("删除密码\n");
+                input_handle_state = DEL_PWD;
+            }
+        }
+        else if (input_buf[0] == '1')
+        {
+            // 指纹
+            MY_LOGI("指纹识别\n");
+        }
+        else if (input_buf[0] == '0')
+        {
+            // OTA升级
+            MY_LOGI("OTA升级\n");
+        }
     }
-    else if (input_buf[0] == '0' && input_buf[1] == '2')
+    else if (input_len >= PASSWORD_LEN)
     {
-        // 删除密码
-        MY_LOGI("删除密码成功");
-    }
-    else if (input_buf[0] == '0' && input_buf[1] == '3')
-    {
-        // 指纹
-        MY_LOGI("指纹识别成功");
-    }
-    else if (input_buf[0] == '0' && input_buf[1] == '4')
-    {
-        // OTA升级
-        MY_LOGI("OTA升级成功");
+        MY_LOGI("验证密码\n");
     }
 }
 void App_IO_KeyScan_Task(void *pvParameters)
 {
-    TickType_t xLastWakeTime = xTaskGetTickCount();
 
     while (1)
     {
@@ -75,12 +84,12 @@ void App_IO_KeyScan_Task(void *pvParameters)
                 // 清空输入缓冲密码
                 memset(input_buf, 0, sizeof(input_buf));
                 input_len = 0;
-                current_state = STATE_INPUT;
+                current_state = STATE_INPUTING;
                 MY_LOGI("开始输入密码");
             }
             break;
 
-            case STATE_INPUT:
+            case STATE_INPUTING:
                 if (KeyValue >= KEY_0 && KeyValue <= KEY_9)
                 {
 
@@ -95,47 +104,21 @@ void App_IO_KeyScan_Task(void *pvParameters)
                 {
                     input_buf[input_len] = '\0';
                     APP_IO_Input_Handle();
-                    current_state = STATE_VERIFY;
-                }
-                break;
-
-            case STATE_VERIFY:
-                // 如果是正常输入密码而非指令验证完就是进入验证状态，否则是指令
-                if (strcmp(input_buf, correct_password) == 0)
-                {
-                    MY_LOGI("✅ 密码正确，解锁成功\n");
-                    fail_cnt = 0;
-                    current_state = STATE_UNLOCKED;
-                }
-                else
-                {
-                    printf("❌ 密码错误\n");
-                    fail_cnt++;
-                    if (fail_cnt >= MAX_FAIL_CNT)
+                    // 如果删除或者添加密码，状态不变，同时清空输入缓冲区input_buf
+                    if (input_handle_state == ADD_PWD || input_handle_state == DEL_PWD)
                     {
-                        current_state = STATE_LOCKED_ERR;
-                        MY_LOGI("系统锁定！\n");
+
+                        //  清空输入缓冲密码
+                        memset(input_buf, 0, sizeof(input_buf));
+                        input_len = 0;
+                        // 方便下一次直接输入
+                        current_state = STATE_INPUTING;
                     }
                     else
                     {
                         current_state = STATE_IDLE;
-                        MY_LOGI("请重新输入密码\n");
                     }
                 }
-                memset(input_buf, 0, sizeof(input_buf));
-                input_len = 0;
-                break;
-
-            case STATE_UNLOCKED:
-                // 这里可以加开锁后的逻辑，比如延时关锁
-                MY_LOGI("门已开，请进\n");
-                current_state = STATE_IDLE; // 回到空闲
-                break;
-
-            case STATE_LOCKED_ERR:
-                // 系统锁定，不接受输入
-                MY_LOGI("系统锁定中，请稍后再试\n");
-                // 这里可以加定时器/管理员复位逻辑
                 break;
 
             default:
