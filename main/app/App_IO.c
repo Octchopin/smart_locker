@@ -18,7 +18,7 @@ static void APP_IO_Input_Handle(void)
 {
     MY_LOGI("开始处理输入的密码!!!");
     MY_LOGI("输入的密码是：%.*s\n", input_len, input_buf);
-    if (!(input_len >= PASSWORD_LEN || input_len == INSTRUCTION_LEN))
+    if (input_len < PASSWORD_LEN && input_len != INSTRUCTION_LEN)
     {
         MY_LOGI("无效输入\n");
         return;
@@ -29,14 +29,14 @@ static void APP_IO_Input_Handle(void)
 
         if (input_buf[0] == '0')
         {
-            if (input_buf[0] == '0' && input_buf[1] == '1')
+            if (input_buf[1] == '1')
             {
                 // 添加密码
                 MY_LOGI("添加密码\n");
                 // 指令状态转换
                 input_handle_state = ADD_PWD;
             }
-            if (input_buf[0] == '0' && input_buf[1] == '2')
+            if (input_buf[1] == '2')
             {
                 // 删除密码
                 MY_LOGI("删除密码\n");
@@ -47,11 +47,6 @@ static void APP_IO_Input_Handle(void)
         {
             // 指纹
             MY_LOGI("指纹识别\n");
-        }
-        else if (input_buf[0] == '0')
-        {
-            // OTA升级
-            MY_LOGI("OTA升级\n");
         }
     }
     else if (input_len >= PASSWORD_LEN)
@@ -80,12 +75,16 @@ void App_IO_KeyScan_Task(void *pvParameters)
             {
             case STATE_IDLE:
             {
-
-                // 清空输入缓冲密码
                 memset(input_buf, 0, sizeof(input_buf));
                 input_len = 0;
                 current_state = STATE_INPUTING;
                 MY_LOGI("开始输入密码");
+
+                // 如果当前按键是数字，就直接存进去
+                if (KeyValue >= KEY_0 && KeyValue <= KEY_9)
+                {
+                    input_buf[input_len++] = '0' + (KeyValue - KEY_0);
+                }
             }
             break;
 

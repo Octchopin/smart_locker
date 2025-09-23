@@ -25,9 +25,10 @@ extern "C"
     // 输入状态枚举
     typedef enum
     {
-        ADD_PWD = 0, // 添加密码
-        DEL_PWD,     // 删除密码
-        VERIFY_PWD,  // 验证密码
+        VERIFY_PWD, // 验证密码
+        ADD_PWD,    // 添加密码
+        DEL_PWD,    // 删除密码
+
     } Input_handle_status_t;
 
     void App_IO_Init(void);
