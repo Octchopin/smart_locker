@@ -18,16 +18,27 @@ void App_IO_Init(void)
     Int_WS2812_Init();
     // 初始化WTN6--语音模块
     Int_WTN6_Init();
+    // 初始化亮屏同时提示音再熄灭，延迟一秒
+    Int_WS2812_Lighting_All_LED_To_Color(&White_LED);
+    sayDoorBell();
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    Int_WS2812_Lighting_All_LED_To_Color(&Black_LED);
 }
 
 void App_IO_AddPwd(void)
 {
+    // 添加成功提示音
+    sayAddSuccess();
 }
 void App_IO_DelPwd(void)
 {
+    // 删除成功提示音
+    sayDelSuccess();
 }
 void App_IO_VerifyPwd(void)
 {
+    // 验证成功提示音
+    sayVerifySuccess();
 }
 
 void App_IO_KeyScan_Task(void *pvParameters)
@@ -62,10 +73,10 @@ void App_IO_KeyScan_Task(void *pvParameters)
         break;
 
         case STATE_INPUTING:
-            // 先熄灭所有灯
-            Int_WS2812_Lighting_All_LED_To_Color(&Black_LED);
             // 点亮当前按键的灯带为蓝色
             Int_WS2812_Set_LED_From_Key(KeyValue, &Blue_LED);
+            // 按键提示音----水滴提示音
+            sayWaterDrop();
             if (KeyValue >= KEY_0 && KeyValue <= KEY_9)
             {
 
@@ -74,6 +85,8 @@ void App_IO_KeyScan_Task(void *pvParameters)
             else if (KeyValue == KEY_M) // 无效输入键
             {
                 MY_LOGI("无效输入");
+                // 无效输入提示音
+                sayInvalid();
                 current_state = STATE_IDLE;
             }
             else if (KeyValue == KEY_SHARP) // 确认键
@@ -114,6 +127,8 @@ static void APP_IO_Input_Handle(void)
     if (!(input_len >= PASSWORD_LEN || input_len == INSTRUCTION_LEN))
     {
         MY_LOGI("无效输入\n");
+        // 无效输入提示音
+        sayInvalid();
         return;
     }
     // 指令逻辑业务分支
@@ -126,6 +141,9 @@ static void APP_IO_Input_Handle(void)
             {
                 // 添加密码
                 MY_LOGI("添加密码\n");
+                // 提示添加用户密码提示音
+                sayAddUser();
+                sayPassword();
                 // 指令状态转换
                 input_handle_state = ADD_PWD;
             }
@@ -133,6 +151,9 @@ static void APP_IO_Input_Handle(void)
             {
                 // 删除密码
                 MY_LOGI("删除密码\n");
+                // 提示删除用户密码提示音
+                sayDelUser();
+                sayPassword();
                 input_handle_state = DEL_PWD;
             }
         }
@@ -145,7 +166,8 @@ static void APP_IO_Input_Handle(void)
     else if (input_len == 2)
     {
         MY_LOGI("输入密码错误，不能使用俩位密码，%.*s", input_len, input_buf);
-        // TODO：添加错误提示音频
+        // 非法输入提示音
+        sayIllegalOperation();
         return;
     }
     else if (input_len >= PASSWORD_LEN)
