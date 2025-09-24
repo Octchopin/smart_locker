@@ -28,17 +28,17 @@ void App_IO_Init(void)
 void App_IO_AddPwd(void)
 {
     // 添加成功提示音
-    sayAddSuccess();
+    sayAddSucc();
 }
 void App_IO_DelPwd(void)
 {
     // 删除成功提示音
-    sayDelSuccess();
+    sayDelSucc();
 }
 void App_IO_VerifyPwd(void)
 {
     // 验证成功提示音
-    sayVerifySuccess();
+    sayVerifySucc();
 }
 
 void App_IO_KeyScan_Task(void *pvParameters)
