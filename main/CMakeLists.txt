@@ -5,10 +5,13 @@ idf_component_register(SRCS
                      "Int/Int_WS2812.c"
                      "Int/Int_SC12B.c"
                       "App/App_IO.c"
+                      "Dri/Dri_NVS.c"
                     INCLUDE_DIRS 
                      "com"
                      "Int"
                     "App"
+                     "Dri"
+
                    REQUIRES driver
                      
                     )
