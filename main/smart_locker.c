@@ -17,7 +17,7 @@ TaskHandle_t App_IO_KeyScan_Handle = NULL;
 void app_main(void)
 {
 
-    /*测试中断*/
+    /*App初始化*/
     App_IO_Init();
     /*创建IO任务用于读写IO */
     xTaskCreate(App_IO_KeyScan_Task, "App_IO_KeyScan_Task", 2048, NULL, 3, &App_IO_KeyScan_Handle);
