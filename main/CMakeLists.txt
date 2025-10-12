@@ -13,5 +13,6 @@ idf_component_register(SRCS
                      "Dri"
 
                    REQUIRES driver
+                     REQUIRES nvs_flash
                      
                     )
