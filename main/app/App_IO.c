@@ -18,6 +18,8 @@ void App_IO_Init(void)
     Int_WS2812_Init();
     // 初始化WTN6--语音模块
     Int_WTN6_Init();
+    // 初始化NVS
+    Dri_NVS_Init();
     // 初始化亮屏同时提示音再熄灭，延迟一秒
     Int_WS2812_Lighting_All_LED_To_Color(&White_LED);
     sayDoorBell();
@@ -27,18 +29,57 @@ void App_IO_Init(void)
 
 void App_IO_AddPwd(void)
 {
-    // 添加成功提示音
-    sayAddSucc();
+
+    // 添加密码
+    esp_err_t err = Dri_NVS_Write_I8(input_buf, 0);
+    if (err != ESP_OK)
+    {
+        MY_LOGI("add pwd failed");
+        sayPasswordAddFail();
+        return;
+    }
+    else
+    {
+        MY_LOGI("add pwd success");
+        // 添加成功提示音
+        sayPasswordAddSucc();
+    }
 }
 void App_IO_DelPwd(void)
 {
-    // 删除成功提示音
-    sayDelSucc();
+    // 删除密码
+    esp_err_t err = Dri_NVS_DelKey(input_buf);
+    if (err != ESP_OK)
+    {
+        MY_LOGI("del pwd failed");
+        sayPassword();
+        sayDelFail();
+        return;
+    }
+    else
+    {
+        MY_LOGI("del pwd success");
+        // 删除成功提示音
+        sayPassword();
+        sayDelSucc();
+    }
 }
 void App_IO_VerifyPwd(void)
 {
-    // 验证成功提示音
-    sayVerifySucc();
+    // 验证密码
+    esp_err_t err = Dri_NVS_IsMatcheKey(input_buf);
+    if (err != ESP_OK)
+    {
+        MY_LOGI("verify pwd failed");
+        sayPasswordVerifyFail();
+        return;
+    }
+    else
+    {
+        MY_LOGI("verify pwd success");
+        // 验证成功提示音
+        sayPasswordVerifySucc();
+    }
 }
 
 void App_IO_KeyScan_Task(void *pvParameters)

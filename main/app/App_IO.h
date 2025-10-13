@@ -6,6 +6,7 @@
 #include "esp_task.h"
 #include "Int_WS2812.h"
 #include "Int_WTN6.h"
+#include "Dri_NVS.h"
 
 #ifdef __cplusplus
 extern "C"
