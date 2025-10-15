@@ -1,10 +1,5 @@
 #include "Int_BDR6120S.h"
-// 定义INA和INB的GPIO引脚
-#define INA GPIO_NUM_4
-#define INB GPIO_NUM_5
 
-// 电机运行时间（单位：ms），可根据实际情况调整
-#define MOTOR_RUN_TIME_MS 500
 
 static void Int_BDR6120S_Ready(void)
 {
