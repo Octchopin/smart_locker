@@ -4,6 +4,7 @@
 #include "debug/com_debug.h"
 #include "nvs_flash.h"
 #include "nvs.h"
+#include "esp_err.h"   // 提供了esp_err_t类型和ESP_OK等错误码的定义，用于错误处理
 #ifdef __cplusplus
 extern "C"
 {

@@ -3,6 +3,8 @@
 
 
 #include "debug/com_debug.h"
+#include "esp_err.h"    // 提供了esp_err_t类型和ESP_OK等错误码的定义，用于错误处理
+#include "driver/gpio.h"
 
 #ifdef __cplusplus
 extern "C" {
