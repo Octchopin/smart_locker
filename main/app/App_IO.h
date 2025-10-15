@@ -7,6 +7,7 @@
 #include "Int_WS2812.h"
 #include "Int_WTN6.h"
 #include "Dri_NVS.h"
+#include "Int_BDR6120S.h"
 
 #ifdef __cplusplus
 extern "C"

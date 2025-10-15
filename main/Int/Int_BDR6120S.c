@@ -48,6 +48,8 @@ void Int_BDR6120S_Unlock(void)
     MY_LOGI("Int_BDR6120S_Unlock");
     Int_BDR6120S_Forward();
     vTaskDelay(pdMS_TO_TICKS(MOTOR_RUN_TIME_MS)); // 电机正转一段时间
+    Int_BDR6120S_Backward();
+    vTaskDelay(pdMS_TO_TICKS(MOTOR_RUN_TIME_MS)); // 电机反转一段时间
     Int_BDR6120S_Brake();
     vTaskDelay(pdMS_TO_TICKS(100)); // 刹车短暂延时
     Int_BDR6120S_Ready();
@@ -57,6 +59,8 @@ void Int_BDR6120S_Lock(void)
     MY_LOGI("Int_BDR6120S_Lock");
     Int_BDR6120S_Backward();
     vTaskDelay(pdMS_TO_TICKS(MOTOR_RUN_TIME_MS)); // 电机反转一段时间
+    Int_BDR6120S_Forward();
+    vTaskDelay(pdMS_TO_TICKS(MOTOR_RUN_TIME_MS)); // 电机正转一段时间
     Int_BDR6120S_Brake();
     vTaskDelay(pdMS_TO_TICKS(100)); // 刹车短暂延时
     Int_BDR6120S_Ready();
