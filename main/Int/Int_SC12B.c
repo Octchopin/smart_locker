@@ -83,10 +83,7 @@ static void gpio_interrupt_init(void)
     // 配置GPIO
     gpio_config(&io_conf);
 
-    // 安装中断服务
-    gpio_install_isr_service(0);
-    // 注册中断处理函数
-    gpio_isr_handler_add(SC_INT_PIN, sc12b_int_handler, NULL);
+
 
     // install gpio isr service
     gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
