@@ -2,13 +2,12 @@
 
 // UART 配置
 #define FINGER_UART_NUM UART_NUM_1
-#define FINGER_UART_TX_PIN   (GPIO_NUM_?)   // 你选的 TX 引脚
-#define FINGER_UART_RX_PIN   (GPIO_NUM_?)   // 你选的 RX 引脚
+#define FINGER_UART_TX_PIN (GPIO_NUM_21) // 你选的 TX 引脚
+#define FINGER_UART_RX_PIN (GPIO_NUM_20) // 你选的 RX 引脚
 #define FINGER_UART_BAUDRATE 57600
 
 // 模块控制 / 中断引脚（如果有的话）
-#define FINGERER_INT_PIN       (GPIO_NUM_?)   // 中断 / 检测引脚（如果模组有的话）
-#define FINGERER_POWER_EN_PIN  (GPIO_NUM_?)   // 如果你加了电源开关控制的话
+#define FINGERER_INT_PIN (GPIO_NUM_10) // 中断 / 检测引脚（如果模组有的话）
 
 // 接收缓冲区大小
 #define FINGER_RX_BUF_SIZE 256
