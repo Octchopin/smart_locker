@@ -5,7 +5,7 @@
 #include "esp_err.h" // 提供了esp_err_t类型和ESP_OK等错误码的定义，用于错误处理
 #include "driver/gpio.h"
 
-// 定义INA和INB的GPIO引脚
+// 电机的控制的GPIO引脚
 #define INA GPIO_NUM_4
 #define INB GPIO_NUM_5
 

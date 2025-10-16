@@ -7,6 +7,7 @@ idf_component_register(SRCS
                       "App/App_IO.c"
                       "Dri/Dri_NVS.c"
                      "Int/Int_BDR6120S.c"
+                     "Int/Int_FPM383F.c"
                     INCLUDE_DIRS 
                      "com"
                      "Int"
