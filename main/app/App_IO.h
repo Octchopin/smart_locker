@@ -1,3 +1,12 @@
+/*** 
+ * @Author: Vesper xgq2451115363@163.com
+ * @Date: 2025-09-05 09:59:36
+ * @LastEditTime: 2025-10-17 18:18:22
+ * @LastEditors: Vesper xgq2451115363@163.com
+ * @Description: 
+ * @FilePath: \smart_locker\main\app\App_IO.h
+ * @Copyright (c) 2025 by ${name} email: ${email}, All Rights Reserved.
+ */
 #ifndef _APP_IO_H_
 #define _APP_IO_H_
 
@@ -8,7 +17,7 @@
 #include "Int_WTN6.h"
 #include "Dri_NVS.h"
 #include "Int_BDR6120S.h"
-
+#include "Int_FPM383F.h"
 #ifdef __cplusplus
 extern "C"
 {
