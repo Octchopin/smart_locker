@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 void Int_FPM383F_Init(void);
+void Int_FPM383F_ReadId(void);
 
 #ifdef __cplusplus
 }

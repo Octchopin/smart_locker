@@ -11,6 +11,8 @@
 
 // 接收缓冲区大小
 #define FINGER_RX_BUF_SIZE 256
+// 接收缓冲区
+static uint8_t rx_buffer[FINGER_RX_BUF_SIZE];
 
 static void IRAM_ATTR fpm383f_int_handler(void *arg)
 {
@@ -24,10 +26,66 @@ static void IRAM_ATTR fpm383f_int_handler(void *arg)
         gpio_intr_enable(gpio_num); // 重新使能中断
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         // 给指纹任务发通知 TODO
-      //  vTaskNotifyGiveFromISR(App_IO_KeyScan_Handle, &xHigherPriorityTaskWoken);
+        //  vTaskNotifyGiveFromISR(App_IO_KeyScan_Handle, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
+
+/**
+ * @brief   计算并设置命令的校验和
+ * @param   cmd  命令数组指针
+ * @retval None
+ */
+static void Int_FPM383F_CheckSum(uint8_t *cmd)
+{
+
+    // 计算校验和 (从包标识开始到参数结束的所有字节之和)
+    uint8_t checksum = 0;
+    for (int i = 6; i < sizeof(cmd) - 2; i++)
+    {
+        checksum += cmd[i];
+    }
+    cmd[sizeof(cmd) - 2] = (checksum >> 8) & 0xFF; // 高字节
+    cmd[sizeof(cmd) - 1] = checksum & 0xFF;
+}
+/**
+ * @brief 发送命令到指纹模块
+ * @param  cmd  命令数组指针
+ * @retval  ESP_OK  成功， ESP_FAIL  失败
+ */
+static esp_err_t Int_FPM383F_SendCmd(uint8_t *cmd)
+{
+    esp_err_t err = ESP_FAIL;
+    // 发送命令
+    int n = uart_write_bytes(FINGER_UART_NUM, (const char *)cmd, sizeof(cmd));
+    if (n >= 0)
+    {
+        MY_LOGI("Sent %d bytes to fingerprint module", n);
+        err = ESP_OK;
+    }
+    return err;
+}
+
+/**
+ * @brief 接收指纹模块数据
+ * @param   rx_buffer  接收缓冲区指针
+ * @param   data_size  期望接收的数据大小
+ * @param   ticks_to_wait  等待时间
+ * @retval  ESP_OK  成功， ESP_FAIL  失败
+ */
+static esp_err_t Int_FPM383F_ReceiveData(uint8_t *rx_buffer, uint16_t data_size, TickType_t ticks_to_wait)
+{
+    esp_err_t err = ESP_FAIL;
+    int n = uart_read_bytes(FINGER_UART_NUM, rx_buffer, data_size, ticks_to_wait);
+    if (n >= 0)
+    {
+        MY_LOGI("Received %d bytes from fingerprint module", n);
+        err = ESP_OK;
+    }
+    return err;
+}
+
+/***************************************************************具体业务函数******************************************************************** */
 void Int_FPM383F_Init(void)
 {
     MY_LOGI("Uart_Init start");
@@ -62,4 +120,57 @@ void Int_FPM383F_Init(void)
     // 中断初始化成功
     MY_LOGI("GPIO interrupt initialized successfully");
     MY_LOGI("Int_FPM383F_Init done");
+
+    // 读取指纹设备ID测试
+    Int_FPM383F_ReadId();
+}
+
+/**
+ * @brief 读取指纹设备ID
+ * @param None
+ * @retval None
+ */
+void Int_FPM383F_ReadId(void)
+{
+    // 发送读取指纹ID命令
+    uint8_t cmd[] = {
+        // 包头
+        0xEF, 0x01,
+        // 设备地址
+        0xFF, 0xFF, 0xFF, 0xFF,
+        // 包标识
+        0x01,
+        // 包长度
+        0x00, 0x04,
+        // 指令码
+        0x34,
+        // 参数
+        0x00,
+        // 校验和
+        '\0',
+        '\0'};
+    // 计算校验和
+    Int_FPM383F_CheckSum(cmd);
+    // 发送命令
+    if (Int_FPM383F_SendCmd(cmd) == ESP_OK)
+    {
+        MY_LOGI("ReadId have sent successfully");
+    }
+    else
+    {
+        MY_LOGE("ReadId sent failed");
+        return;
+    }
+    // 接收响应
+    if (Int_FPM383F_ReceiveData(rx_buffer, 44, 5000 / portTICK_PERIOD_MS) == ESP_OK)
+    {
+        MY_LOGI("ReadId have received successfully");
+        // 处理接收到的数据,第10到41字节是ID信息
+        printf("id:%.*s\n", 32, rx_buffer + 10);
+    }
+    else
+    {
+        MY_LOGE("ReadId  failed to receive data");
+        return;
+    }
 }

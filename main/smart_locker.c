@@ -16,7 +16,8 @@
 TaskHandle_t App_IO_KeyScan_Handle = NULL;
 void app_main(void)
 {
-
+    ESP_LOGI("xgq", "APP_START,%s","v1.0");
+    Int_WTN6_Init();
     /*App初始化*/
     App_IO_Init();
     /*创建IO任务用于读写IO */
