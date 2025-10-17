@@ -12,7 +12,7 @@ static Input_status_t current_state = STATE_IDLE;
 static void APP_IO_Input_Handle(void);
 void App_IO_Init(void)
 {
-    // 初始化触摸IO---感应电容模块
+    // 初始化按键扫描任务
     Int_SC12B_Init();
     // 初始化WS2812---LED模块
     Int_WS2812_Init();
@@ -20,8 +20,11 @@ void App_IO_Init(void)
     Int_WTN6_Init();
     // 初始化NVS
     Dri_NVS_Init();
-    //电机初始化
+    // 电机初始化
     Int_BDR6120S_Init();
+    // 初始化指纹模块
+    Int_FPM383F_Init();
+
     // 初始化亮屏同时提示音再熄灭，延迟一秒
     Int_WS2812_Lighting_All_LED_To_Color(&White_LED);
     sayDoorBell();
@@ -83,7 +86,7 @@ void App_IO_VerifyPwd(void)
         sayPasswordVerifySucc();
         // 开锁
         Int_BDR6120S_Unlock();
-        //锁已开提示音
+        // 锁已开提示音
         sayDoorOpen();
     }
 }
