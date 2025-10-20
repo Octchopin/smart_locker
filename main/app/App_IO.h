@@ -1,9 +1,9 @@
-/*** 
+/***
  * @Author: Vesper xgq2451115363@163.com
  * @Date: 2025-09-05 09:59:36
  * @LastEditTime: 2025-10-17 18:18:22
  * @LastEditors: Vesper xgq2451115363@163.com
- * @Description: 
+ * @Description:
  * @FilePath: \smart_locker\main\app\App_IO.h
  * @Copyright (c) 2025 by ${name} email: ${email}, All Rights Reserved.
  */
@@ -18,6 +18,8 @@
 #include "Dri_NVS.h"
 #include "Int_BDR6120S.h"
 #include "Int_FPM383F.h"
+#include <string.h> // strcmp 用
+#include <stdio.h>  // printf 用
 #ifdef __cplusplus
 extern "C"
 {
@@ -49,6 +51,7 @@ extern "C"
     void App_IO_AddPwd(void);
     void App_IO_DelPwd(void);
     void App_IO_VerifyPwd(void);
+    void App_IO_FingerPrintScan_Task(void *pvParameters);
 
 #ifdef __cplusplus
 }

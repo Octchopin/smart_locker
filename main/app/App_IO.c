@@ -1,6 +1,5 @@
 #include "App_IO.h"
-#include <string.h> // strcmp 用
-#include <stdio.h>  // printf 用
+
 // 输入缓冲
 static char input_buf[PASSWORD_LEN + 1];
 static uint8_t input_len = 0;
@@ -10,6 +9,7 @@ static Input_handle_status_t input_handle_state = VERIFY_PWD;
 static Input_status_t current_state = STATE_IDLE;
 
 static void APP_IO_Input_Handle(void);
+
 void App_IO_Init(void)
 {
     // 初始化按键扫描任务
@@ -207,10 +207,35 @@ static void APP_IO_Input_Handle(void)
                 input_handle_state = DEL_PWD;
             }
         }
-        else if (input_buf[0] == '1')
+        else if (input_buf[0] == '1') // 指纹识别11为添加指纹，12为删除指纹，13为识别指纹
         {
             // 指纹
             MY_LOGI("指纹识别\n");
+            if (input_buf[1] == '1')
+            {
+                // 添加指纹
+                MY_LOGI("添加指纹\n");
+                // TODO提示添加用户指纹提示音-----
+              //  sayAddUserFingerPrint();
+                // TODO 添加指纹逻辑
+                xTaskNotify(App_IO_FingerPrintScan_Handle,1, eSetValueWithoutOverwrite);
+            }
+            else if (input_buf[1] == '2')
+            {
+                // 删除指纹
+                MY_LOGI("删除指纹\n");
+                // TODO提示删除用户指纹提示音-----
+               // sayDelUserFingerPrint();
+                // TODO 删除指纹逻辑
+            }
+            else if (input_buf[1] == '3')
+            {
+                // 识别指纹
+                MY_LOGI("识别指纹\n");
+                // TODO提示识别用户指纹提示音-----
+              //  sayVerifyUserFingerPrint();
+                // TODO 识别指纹逻辑
+            }
         }
     }
     else if (input_len == 2)
@@ -243,5 +268,18 @@ static void APP_IO_Input_Handle(void)
         }
         // 处理完指令后，重置状态
         input_handle_state = VERIFY_PWD;
+    }
+}
+
+void App_IO_FingerPrintScan_Task(void *pvParameters)
+{
+
+    MY_LOGI("指纹任务启动");
+    while (1)
+    {
+
+        unsigned long ulNotifiedValue;
+        // 等待指纹中断通知
+        xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
     }
 }

@@ -1,3 +1,12 @@
+/*
+ * @FilePath: \smart_locker\main\Int\Int_FPM383F.c
+ * @Description: 
+ * @Author:  Vesper Shaw (octxgq@gmail.com)
+ * @Date: 2025-10-16 17:59:45
+ * @LastEditTime: 2025-10-20 17:44:00
+ * @LastEditors: Vesper Shaw (octxgq@gmail.com)
+ * Copyright (c) 2025 by XXX有限公司, All Rights Reserved.
+ */
 #include "Int_FPM383F.h"
 
 // UART 配置
@@ -14,19 +23,21 @@
 // 接收缓冲区
 static uint8_t rx_buffer[FINGER_RX_BUF_SIZE];
 
-static void IRAM_ATTR fpm383f_int_handler(void *arg)
+
+
+
+static void IRAM_ATTR Fpm383f_int_handler(void *arg)
 {
     uint32_t gpio_num = (uint32_t)arg;
     if (gpio_num == FINGERER_INT_PIN)
-    {
-        // 清除中断标志
-        gpio_intr_disable(gpio_num);
+    {    
+        // 禁用中断
+        gpio_intr_disable(FINGERER_INT_PIN);
         // 读取中断标志
         MY_LOGI("指纹中断产生，指纹被按下");
-        gpio_intr_enable(gpio_num); // 重新使能中断
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         // 给指纹任务发通知 TODO
-        //  vTaskNotifyGiveFromISR(App_IO_KeyScan_Handle, &xHigherPriorityTaskWoken);
+        xTaskNotifyFromISR(App_IO_FingerPrintScan_Handle, 1,eSetValueWithoutOverwrite, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
@@ -116,13 +127,15 @@ void Int_FPM383F_Init(void)
     // install gpio isr service (JUST ONCE CALLED WHEN WHOLE PROGRAM START,SO COMMENT IT)
     // gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
     // hook isr handler for specific gpio pin    UNTODO: check return value
-    gpio_isr_handler_add(FINGERER_INT_PIN, fpm383f_int_handler, (void *)FINGERER_INT_PIN);
+    gpio_isr_handler_add(FINGERER_INT_PIN, Fpm383f_int_handler, (void *)FINGERER_INT_PIN);
     // 中断初始化成功
     MY_LOGI("GPIO interrupt initialized successfully");
     MY_LOGI("Int_FPM383F_Init done");
 
     // 读取指纹设备ID测试
     Int_FPM383F_ReadId();
+    //进入睡眠
+    Int_FPM383F_Sleep();
 }
 
 /**
@@ -173,4 +186,14 @@ void Int_FPM383F_ReadId(void)
         MY_LOGE("ReadId  failed to receive data");
         return;
     }
+}
+/**
+ * @brief  进入睡眠模式
+ * @param   none
+ * @retval None
+ */
+void Int_FPM383F_Sleep(void)
+{
+
+    // 进入睡眠模式
 }
