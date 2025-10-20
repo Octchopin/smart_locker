@@ -216,25 +216,27 @@ static void APP_IO_Input_Handle(void)
                 // 添加指纹
                 MY_LOGI("添加指纹\n");
                 // TODO提示添加用户指纹提示音-----
-              //  sayAddUserFingerPrint();
+                //  sayAddUserFingerPrint();
                 // TODO 添加指纹逻辑
-                xTaskNotify(App_IO_FingerPrintScan_Handle,1, eSetValueWithoutOverwrite);
+                xTaskNotify(App_IO_FingerPrintScan_Handle, 1, eSetValueWithoutOverwrite);
             }
             else if (input_buf[1] == '2')
             {
                 // 删除指纹
                 MY_LOGI("删除指纹\n");
                 // TODO提示删除用户指纹提示音-----
-               // sayDelUserFingerPrint();
+                //  sayDelUserFingerPrint();
                 // TODO 删除指纹逻辑
+                xTaskNotify(App_IO_FingerPrintScan_Handle, 2, eSetValueWithoutOverwrite);
             }
             else if (input_buf[1] == '3')
             {
                 // 识别指纹
                 MY_LOGI("识别指纹\n");
                 // TODO提示识别用户指纹提示音-----
-              //  sayVerifyUserFingerPrint();
+                //  sayVerifyUserFingerPrint();
                 // TODO 识别指纹逻辑
+                xTaskNotify(App_IO_FingerPrintScan_Handle, 3, eSetValueWithoutOverwrite);
             }
         }
     }
