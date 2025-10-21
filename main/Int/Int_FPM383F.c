@@ -1,9 +1,9 @@
 /*
  * @FilePath: \smart_locker\main\Int\Int_FPM383F.c
- * @Description: 
+ * @Description:
  * @Author:  Vesper Shaw (octxgq@gmail.com)
  * @Date: 2025-10-16 17:59:45
- * @LastEditTime: 2025-10-20 17:44:00
+ * @LastEditTime: 2025-10-21 16:44:41
  * @LastEditors: Vesper Shaw (octxgq@gmail.com)
  * Copyright (c) 2025 by XXX有限公司, All Rights Reserved.
  */
@@ -20,24 +20,20 @@
 
 // 接收缓冲区大小
 #define FINGER_RX_BUF_SIZE 256
-// 接收缓冲区
+// 接收缓冲区---------------用于接受指纹响应的数据
 static uint8_t rx_buffer[FINGER_RX_BUF_SIZE];
-
-
-
 
 static void IRAM_ATTR Fpm383f_int_handler(void *arg)
 {
     uint32_t gpio_num = (uint32_t)arg;
     if (gpio_num == FINGERER_INT_PIN)
-    {    
-        // 禁用中断
+    {
+        // 关闭中断
         gpio_intr_disable(FINGERER_INT_PIN);
-        // 读取中断标志
         MY_LOGI("指纹中断产生，指纹被按下");
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         // 给指纹任务发通知 TODO
-        xTaskNotifyFromISR(App_IO_FingerPrintScan_Handle, 1,eSetValueWithoutOverwrite, &xHigherPriorityTaskWoken);
+        xTaskNotifyFromISR(App_IO_FingerPrintScan_Handle, '3', eSetValueWithOverwrite, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
@@ -134,7 +130,7 @@ void Int_FPM383F_Init(void)
 
     // 读取指纹设备ID测试
     Int_FPM383F_ReadId();
-    //进入睡眠
+    // 进入睡眠
     Int_FPM383F_Sleep();
 }
 
@@ -145,7 +141,7 @@ void Int_FPM383F_Init(void)
  */
 void Int_FPM383F_ReadId(void)
 {
-    // 发送读取指纹ID命令
+    // 发送读取指纹ID设备命令
     uint8_t cmd[] = {
         // 包头
         0xEF, 0x01,
@@ -179,7 +175,7 @@ void Int_FPM383F_ReadId(void)
     {
         MY_LOGI("ReadId have received successfully");
         // 处理接收到的数据,第10到41字节是ID信息
-        printf("id:%.*s\n", 32, rx_buffer + 10);
+        MY_LOGI("Fingerprint id:%.*s", 32, rx_buffer + 10);
     }
     else
     {
@@ -195,5 +191,36 @@ void Int_FPM383F_ReadId(void)
 void Int_FPM383F_Sleep(void)
 {
 
-    // 进入睡眠模式
+    // 休眠指纹ID命令
+    uint8_t cmd[] = {
+        // 包头
+        0xEF, 0x01,
+        // 设备地址
+        0xFF, 0xFF, 0xFF, 0xFF,
+        // 包标识
+        0x01,
+        // 包长度
+        0x00, 0x03,
+        // 指令码
+        0x33,
+        // 校验和
+        '\0',
+        '\0'};
+    // 计算校验和
+    Int_FPM383F_CheckSum(cmd);
+    // 进入休眠模式，判断响应结果是否为0x00，若不是则重新发送指令
+    do
+    {
+
+        // 发送命令
+        Int_FPM383F_SendCmd(cmd);
+        // 读取响应
+        Int_FPM383F_ReceiveData(rx_buffer, 44, 1000 / portTICK_PERIOD_MS);
+        // 打印第9字节的值----响应确认码0x00表示成功，0x01表示失败
+        MY_LOGI("Sleep response code: 0x%02X", rx_buffer[9]);
+    } while (rx_buffer[9] != 0x00);
+
+    // 说明返回指令正确,第9字节是0x00，进入休眠
+    //  启用中断
+    gpio_intr_enable(FINGERER_INT_PIN);
 }

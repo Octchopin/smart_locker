@@ -215,28 +215,19 @@ static void APP_IO_Input_Handle(void)
             {
                 // 添加指纹
                 MY_LOGI("添加指纹\n");
-                // TODO提示添加用户指纹提示音-----
-                //  sayAddUserFingerPrint();
-                // TODO 添加指纹逻辑
-                xTaskNotify(App_IO_FingerPrintScan_Handle, 1, eSetValueWithoutOverwrite);
+                // 添加用户指纹提示音-----
+                sayAddUserFingerprint();
+                // 添加指纹任务通知
+                xTaskNotify(App_IO_FingerPrintScan_Handle, input_buf[1], eSetValueWithOverwrite);
             }
             else if (input_buf[1] == '2')
             {
                 // 删除指纹
                 MY_LOGI("删除指纹\n");
-                // TODO提示删除用户指纹提示音-----
-                //  sayDelUserFingerPrint();
-                // TODO 删除指纹逻辑
-                xTaskNotify(App_IO_FingerPrintScan_Handle, 2, eSetValueWithoutOverwrite);
-            }
-            else if (input_buf[1] == '3')
-            {
-                // 识别指纹
-                MY_LOGI("识别指纹\n");
-                // TODO提示识别用户指纹提示音-----
-                //  sayVerifyUserFingerPrint();
-                // TODO 识别指纹逻辑
-                xTaskNotify(App_IO_FingerPrintScan_Handle, 3, eSetValueWithoutOverwrite);
+                // 删除用户指纹提示音-----
+                sayDelUserFingerprint();
+                // 删除指纹任务通知
+                xTaskNotify(App_IO_FingerPrintScan_Handle, input_buf[1], eSetValueWithOverwrite);
             }
         }
     }
@@ -279,9 +270,14 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
     MY_LOGI("指纹任务启动");
     while (1)
     {
-
-        unsigned long ulNotifiedValue;
+     
+        uint32_t ulNotifiedValue;
         // 等待指纹中断通知
         xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
+        MY_LOGI("value notified is:%c", (char)&ulNotifiedValue);
+        //执行指纹逻辑
+
+        //执行完进入睡眠，等待下次中断
+        Int_FPM383F_Sleep();
     }
 }
