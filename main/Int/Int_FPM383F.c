@@ -3,7 +3,7 @@
  * @Description:
  * @Author:  Vesper Shaw (octxgq@gmail.com)
  * @Date: 2025-10-16 17:59:45
- * @LastEditTime: 2025-10-21 16:44:41
+ * @LastEditTime: 2025-10-21 19:03:22
  * @LastEditors: Vesper Shaw (octxgq@gmail.com)
  * Copyright (c) 2025 by XXX有限公司, All Rights Reserved.
  */
@@ -209,16 +209,17 @@ void Int_FPM383F_Sleep(void)
     // 计算校验和
     Int_FPM383F_CheckSum(cmd);
     // 进入休眠模式，判断响应结果是否为0x00，若不是则重新发送指令
+    esp_err_t err = ESP_FAIL;
     do
     {
 
         // 发送命令
         Int_FPM383F_SendCmd(cmd);
         // 读取响应
-        Int_FPM383F_ReceiveData(rx_buffer, 44, 1000 / portTICK_PERIOD_MS);
+        err = Int_FPM383F_ReceiveData(rx_buffer, 44, 1000 / portTICK_PERIOD_MS);
         // 打印第9字节的值----响应确认码0x00表示成功，0x01表示失败
         MY_LOGI("Sleep response code: 0x%02X", rx_buffer[9]);
-    } while (rx_buffer[9] != 0x00);
+    } while ((rx_buffer[9] != 0x00 && err == ESP_OK) || err != ESP_OK);
 
     // 说明返回指令正确,第9字节是0x00，进入休眠
     //  启用中断
