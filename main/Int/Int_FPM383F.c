@@ -3,7 +3,7 @@
  * @Description:
  * @Author:  Vesper Shaw (octxgq@gmail.com)
  * @Date: 2025-10-16 17:59:45
- * @LastEditTime: 2025-10-21 19:03:22
+ * @LastEditTime: 2025-10-22 18:09:50
  * @LastEditors: Vesper Shaw (octxgq@gmail.com)
  * Copyright (c) 2025 by XXX有限公司, All Rights Reserved.
  */
@@ -82,6 +82,10 @@ static esp_err_t Int_FPM383F_SendCmd(uint8_t *cmd)
  */
 static esp_err_t Int_FPM383F_ReceiveData(uint8_t *rx_buffer, uint16_t data_size, TickType_t ticks_to_wait)
 {
+
+    // 先清空缓冲区
+    memset(rx_buffer, 0, sizeof(rx_buffer));
+    // 实际业务接受数据
     esp_err_t err = ESP_FAIL;
     int n = uart_read_bytes(FINGER_UART_NUM, rx_buffer, data_size, ticks_to_wait);
     if (n >= 0)
@@ -224,4 +228,41 @@ void Int_FPM383F_Sleep(void)
     // 说明返回指令正确,第9字节是0x00，进入休眠
     //  启用中断
     gpio_intr_enable(FINGERER_INT_PIN);
+}
+
+/**
+ * @brief  取消自动验证或者注册
+ * @param  None
+ * @retval None
+ */
+void Int_FPM383F_CancelAutoVerifyOrRegister(void)
+{
+    // 取消自动验证命令
+    uint8_t cmd[] = {
+        // 包头
+        0xEF, 0x01,
+        // 设备地址
+        0xFF, 0xFF, 0xFF, 0xFF,
+        // 包标识
+        0x01,
+        // 包长度
+        0x00, 0x03,
+        // 指令码
+        0x30,
+        // 校验和
+        '\0',
+        '\0'};
+    // 计算校验和
+    Int_FPM383F_CheckSum(cmd);
+    // 循环发送指令，直到收到成功响应
+    esp_err_t err = ESP_FAIL;
+    do
+    {
+        // 发送命令
+        Int_FPM383F_SendCmd(cmd);
+        // 读取响应超时时间1s
+        err = Int_FPM383F_ReceiveData(rx_buffer, 44, 1000 / portTICK_PERIOD_MS);
+        // 打印第9字节的值----响应确认码0x00表示成功，0x01表示失败
+        MY_LOGI("CancelAutoVerifyOrRegister response code: 0x%02X", rx_buffer[9]);
+    } while ((rx_buffer[0] != 0x00 && rx_buffer[9] != 0x00) || err != ESP_OK);
 }
