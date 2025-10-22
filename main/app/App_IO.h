@@ -3,7 +3,7 @@
  * @Date: 2025-09-05 09:59:36
  * @LastEditTime: 2025-10-17 18:18:22
  * @LastEditors: Vesper xgq2451115363@163.com
- * @Description:
+ * @Description: 输入输出模块头文件
  * @FilePath: \smart_locker\main\app\App_IO.h
  * @Copyright (c) 2025 by ${name} email: ${email}, All Rights Reserved.
  */
@@ -45,6 +45,13 @@ extern "C"
         DEL_PWD,    // 删除密码
 
     } Input_handle_status_t;
+    typedef enum
+    {
+
+        FINGERPRINT_VERIFY = 0,
+        FINGERPRINT_ADD,
+        FINGERPRINT_DEL
+    } Fingerprint_Operation_State_t;
 
     void App_IO_Init(void);
     void App_IO_KeyScan_Task(void *pvParameters);

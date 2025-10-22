@@ -264,20 +264,58 @@ static void APP_IO_Input_Handle(void)
     }
 }
 
+
 void App_IO_FingerPrintScan_Task(void *pvParameters)
 {
 
     MY_LOGI("指纹任务启动");
     while (1)
     {
-     
+        Fingerprint_Operation_State_t fingerprint_operation_state = FINGERPRINT_VERIFY;
         uint32_t ulNotifiedValue;
         // 等待指纹中断通知
         xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
         MY_LOGI("value notified is:%c", (char)&ulNotifiedValue);
-        //执行指纹逻辑
+        // 执行指纹逻辑
+        switch (ulNotifiedValue)
+        {
+        case '1':
+        {
+            // 改变指纹操作状态为添加指纹
+            fingerprint_operation_state = FINGERPRINT_ADD;
+            break;
+        }
 
-        //执行完进入睡眠，等待下次中断
+        case '2':
+        {
+            // 改变指纹操作状态为删除指纹
+            fingerprint_operation_state = FINGERPRINT_DEL;
+            break;
+        }
+        case '3':
+        {
+            // 根据状态放置指纹操作逻辑
+            if (fingerprint_operation_state == FINGERPRINT_VERIFY)
+            {
+                MY_LOGI("验证指纹");
+                // 验证指纹逻辑 TODO
+            }
+            else if (fingerprint_operation_state == FINGERPRINT_ADD)
+            {
+                MY_LOGI("添加指纹");
+                // 添加指纹逻辑 TODO
+            }
+            else if (fingerprint_operation_state == FINGERPRINT_DEL)
+            {
+                MY_LOGI("删除指纹");
+                // 删除指纹逻辑 TODO
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        // 执行完进入睡眠，等待下次中断
         Int_FPM383F_Sleep();
     }
 }
