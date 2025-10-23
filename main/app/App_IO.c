@@ -275,7 +275,7 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
         uint32_t ulNotifiedValue;
         // 等待指纹中断通知
         xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
-        MY_LOGI("value notified is:%c", (char)&ulNotifiedValue);
+        MY_LOGI("value notified is:%c", (char)ulNotifiedValue);
         // 执行指纹逻辑
         switch (ulNotifiedValue)
         {
