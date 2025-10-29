@@ -215,8 +215,6 @@ static void APP_IO_Input_Handle(void)
             {
                 // 添加指纹
                 MY_LOGI("添加指纹\n");
-                // 添加用户指纹提示音-----
-                sayAddUserFingerprint();
                 // 添加指纹任务通知
                 xTaskNotify(App_IO_FingerPrintScan_Handle, input_buf[1], eSetValueWithOverwrite);
             }
@@ -224,8 +222,6 @@ static void APP_IO_Input_Handle(void)
             {
                 // 删除指纹
                 MY_LOGI("删除指纹\n");
-                // 删除用户指纹提示音-----
-                sayDelUserFingerprint();
                 // 删除指纹任务通知
                 xTaskNotify(App_IO_FingerPrintScan_Handle, input_buf[1], eSetValueWithOverwrite);
             }
@@ -264,7 +260,6 @@ static void APP_IO_Input_Handle(void)
     }
 }
 
-
 void App_IO_FingerPrintScan_Task(void *pvParameters)
 {
 
@@ -281,6 +276,10 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
         {
         case '1':
         {
+            // 添加用户指纹提示音-----
+            sayAddUserFingerprint();
+            // 请放置手指
+            sayPlaceFinger();
             // 改变指纹操作状态为添加指纹
             fingerprint_operation_state = FINGERPRINT_ADD;
             break;
@@ -288,6 +287,10 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
 
         case '2':
         {
+            // 删除用户指纹提示音-----
+            sayDelUserFingerprint();
+            // 请放置手指
+            sayPlaceFinger();
             // 改变指纹操作状态为删除指纹
             fingerprint_operation_state = FINGERPRINT_DEL;
             break;
@@ -310,6 +313,7 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
                 MY_LOGI("删除指纹");
                 // 删除指纹逻辑 TODO
             }
+            Int_FPM383F_Sleep();
             break;
         }
         default:

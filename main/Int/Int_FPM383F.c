@@ -3,7 +3,7 @@
  * @Description:
  * @Author:  Vesper Shaw (octxgq@gmail.com)
  * @Date: 2025-10-16 17:59:45
- * @LastEditTime: 2025-10-23 18:55:44
+ * @LastEditTime: 2025-10-29 18:05:34
  * @LastEditors: Vesper Shaw (octxgq@gmail.com)
  * Copyright (c) 2025 by XXX有限公司, All Rights Reserved.
  */
@@ -283,7 +283,7 @@ void Int_FPM383F_AutoEnroll(void)
     // ID号
     uint16_t id = 0x01;
     /*参数-----------根据通讯协议指令包说明设置
-    bit0-bit5: 0011 1010 ---> 0x3A
+    bit0-bit5: 0001 1011 ---> 0x1B
     bit0: 1 获取图像成功后灭
     bit1: 1 打开预处理
     bit2: 0 返回关键步骤
@@ -291,7 +291,7 @@ void Int_FPM383F_AutoEnroll(void)
     bit4: 1 不允许指纹重复注册
     bit5: 0 不用手指离开
     */
-    uint16_t param = 0x3A;
+    uint16_t param = 0x1B;
     // 自动注册模板指令包
     uint8_t cmd[] = {
         // 包头
@@ -336,10 +336,27 @@ void Int_FPM383F_AutoEnroll(void)
             MY_LOGI("AutoEnroll failed,conf: 0x%02X", confirmation_code);
             // 指纹注册失败语音提示
             sayFingerprintAddFail();
-        
-        }else if (parameter_1)
+            break;
+        }
+        else if (parameter_1 == 0x03)
         {
-            
+            MY_LOGI("Please place the same finger again");
+            // 指纹注册第二次采集语音提示---手指离开
+            sayTakeAwayFinger();
+            // 延迟1s,再次采集
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            if (parameter_1 < 0x02)
+            {
+                // 语音提示
+                sayPlaceFingerAgain();
+            }
+        }
+        else if (parameter_1 == 0x06 && parameter_2 == 0xf2)
+        {
+            MY_LOGI("AutoEnroll success ");
+            // 指纹注册成功语音提示
+            sayFingerprintAddSucc();
+            break; // 注册成功，退出循环
         }
     }
 
