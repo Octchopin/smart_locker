@@ -3,7 +3,7 @@
  * @Description: 指纹模块FPM383F接口函数头文件
  * @Author:  Vesper Shaw (octxgq@gmail.com)
  * @Date: 2025-10-16 17:59:59
- * @LastEditTime: 2025-10-23 17:40:26
+ * @LastEditTime: 2025-10-30 18:50:23
  * @LastEditors: Vesper Shaw (octxgq@gmail.com)
  * @Copyright (c) 2025 by XXX有限公司, All Rights Reserved.
  */
@@ -16,6 +16,7 @@
 #include "driver/uart.h"
 #include "esp_task.h"
 #include "Int_WTN6.h"
+#include "Int_BDR6120S.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,6 +34,7 @@ void Int_FPM383F_Sleep(void);
 
 
 void Int_FPM383F_AutoEnroll(void);
+
 
 #ifdef __cplusplus
 }

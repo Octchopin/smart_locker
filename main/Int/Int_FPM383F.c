@@ -3,7 +3,7 @@
  * @Description:
  * @Author:  Vesper Shaw (octxgq@gmail.com)
  * @Date: 2025-10-16 17:59:45
- * @LastEditTime: 2025-10-29 18:05:34
+ * @LastEditTime: 2025-10-30 18:51:26
  * @LastEditors: Vesper Shaw (octxgq@gmail.com)
  * Copyright (c) 2025 by XXX有限公司, All Rights Reserved.
  */
@@ -25,7 +25,8 @@ static uint8_t rx_buffer[FINGER_RX_BUF_SIZE];
 static void Int_FPM383F_CheckSum(uint8_t *cmd, uint16_t len);
 static esp_err_t Int_FPM383F_ReceiveData(uint8_t *rx_buffer, uint16_t data_size, TickType_t ticks_to_wait);
 static esp_err_t Int_FPM383F_SendCmd(uint8_t *cmd, uint16_t len);
-static void Int_FPM383F_CancelAutoVerifyOrEnroll(void);
+static void Int_FPM383F_CancelAutoIdentifyOrEnroll(void);
+static int16_t Int_FPM383F_GetID(void);
 
 static void IRAM_ATTR Fpm383f_int_handler(void *arg)
 {
@@ -92,6 +93,8 @@ static esp_err_t Int_FPM383F_ReceiveData(uint8_t *rx_buffer, uint16_t data_size,
     // 实际业务接受数据
     esp_err_t err = ESP_FAIL;
     int n = uart_read_bytes(FINGER_UART_NUM, rx_buffer, data_size, ticks_to_wait);
+    // 清空串口缓存
+    uart_flush(FINGER_UART_NUM);
     if (n >= 0)
     {
         MY_LOGI("Received %d bytes from fingerprint module", n);
@@ -239,7 +242,7 @@ void Int_FPM383F_Sleep(void)
  * @param  None
  * @retval None
  */
-static void Int_FPM383F_CancelAutoVerifyOrEnroll(void)
+static void Int_FPM383F_CancelAutoIdentifyOrEnroll(void)
 {
     // 取消自动验证命令
     uint8_t cmd[] = {
@@ -279,9 +282,9 @@ static void Int_FPM383F_CancelAutoVerifyOrEnroll(void)
 void Int_FPM383F_AutoEnroll(void)
 {
     // 停止自动验证或者注册-------------解决芯片内部因为自动注册完不及时清理可能出现bug
-    Int_FPM383F_CancelAutoVerifyOrEnroll();
+    Int_FPM383F_CancelAutoIdentifyOrEnroll();
     // ID号
-    uint16_t id = 0x01;
+    int16_t id = Int_FPM383F_GetID();
     /*参数-----------根据通讯协议指令包说明设置
     bit0-bit5: 0001 1011 ---> 0x1B
     bit0: 1 获取图像成功后灭
@@ -361,5 +364,131 @@ void Int_FPM383F_AutoEnroll(void)
     }
 
     // 取消自动注册，清理状态
-    Int_FPM383F_CancelAutoVerifyOrEnroll();
+    Int_FPM383F_CancelAutoIdentifyOrEnroll();
+}
+
+/**
+ * @brief   获取指纹ID(根据索引表生出id)
+ * @param None
+ * @retval None
+ */
+static int16_t Int_FPM383F_GetID(void)
+{
+    // 获取ID指令包
+    uint8_t cmd[] = {
+        // 包头
+        0xEF, 0x01,
+        // 设备地址
+        0xFF, 0xFF, 0xFF, 0xFF,
+        // 包标识
+        0x01,
+        // 包长度
+        0x00, 0x04,
+        // 指令码
+        0x1F,
+        // 页码
+        0x00,
+        // 校验和
+        '\0',
+        '\0'
+
+    };
+    // 计算校验和
+    Int_FPM383F_CheckSum(cmd, sizeof(cmd));
+    // 发送命令
+    Int_FPM383F_SendCmd(cmd, sizeof(cmd));
+    // 接收响应
+    Int_FPM383F_ReceiveData(rx_buffer, 44, 5000 / portTICK_PERIOD_MS);
+    int16_t id = -1;
+    // 循环获取到数组第10到42字节的数据
+    for (size_t i = 10; i < 42; i++)
+    {
+        // 获取数组第i字节的数据
+        uint8_t byte = rx_buffer[i];
+        // 循环获取这个字节的每一位，然后遇到0就计算id值，每次获取完一位右移一位
+        for (size_t j = 0; j < 8; j++)
+        {
+            // 判断是否为0
+            if ((byte & 0x01) == 0)
+            {
+                // 计算
+                id = j + (i - 10) * 8;
+                return id;
+            }
+            // 右移一位
+            byte >>= 1;
+        }
+    }
+    return id;
+}
+
+/**
+ * @brief   一站式验证指纹， 包含采集指纹、 生成特征、 比对模板等功能
+ * @param   None
+ * @retval None
+ */
+void Int_FPM383F_AutoIdentify(void)
+{
+
+    // 清理状态-------------解决芯片内部因为自动验证完不及时清理可能出现bug
+    Int_FPM383F_CancelAutoIdentifyOrEnroll();
+    // 自动识别指纹指令包
+    uint8_t cmd[] = {
+        // 包头
+        0xEF, 0x01,
+        // 设备地址
+        0xFF, 0xFF, 0xFF, 0xFF,
+        // 包标识
+        0x01,
+        // 包长度
+        0x00, 0x08,
+        // 指令码
+        0x32,
+        // 分数等级
+        0x00,
+        // ID号0xffff表示1:N识别
+        0xFF, 0xFF,
+        // 参数  0x0000表示默认参数
+        0x00, 0x00,
+        // 校验和
+        '\0',
+        '\0'};
+    // 计算校验和
+    Int_FPM383F_CheckSum(cmd, sizeof(cmd));
+    // 发送命令
+    Int_FPM383F_SendCmd(cmd, sizeof(cmd));
+    // 循环接受不同响应
+    while (1)
+    {
+        // 接受响应包
+        Int_FPM383F_ReceiveData(rx_buffer, 44, 5000 / portTICK_PERIOD_MS);
+        // 定义确认码、包标识、参数1、参数2
+        uint8_t package_identifier = rx_buffer[6];
+        uint8_t confirmation_code = rx_buffer[9];
+        uint8_t parameter_1 = rx_buffer[10];
+        // 根据包标识判断是否收到数据，根据确认码判断是否收到正确数据
+        if (package_identifier == 0x00)
+            continue;
+        if (confirmation_code != 0x00)
+        {
+            // 获取错误信息
+            MY_LOGI("AutoIdentify failed,conf: 0x%02X", confirmation_code);
+            // 指纹验证失败语音提示
+            sayFingerprintVerifyFail();
+            break;
+        }
+        else if (parameter_1 == 0x05 && confirmation_code == 0x00)
+        {
+            // 指纹验证成功语音提示
+            sayFingerprintVerifySucc();
+            // 动作电机驱动开锁
+            Int_BDR6120S_Unlock();
+            // 门已开语音提示
+            sayDoorOpen();
+            break;
+        }
+    }
+
+    // 取消自动识别，清理状态
+    Int_FPM383F_CancelAutoIdentifyOrEnroll();
 }

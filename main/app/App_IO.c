@@ -301,25 +301,28 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
             if (fingerprint_operation_state == FINGERPRINT_VERIFY)
             {
                 MY_LOGI("验证指纹");
-                // 验证指纹逻辑 TODO
+                // 一站式验证指纹
+                Int_FPM383F_AutoIdentify();
             }
             else if (fingerprint_operation_state == FINGERPRINT_ADD)
             {
                 MY_LOGI("添加指纹");
-                // 添加指纹逻辑 TODO
+                // 一站式注册指纹
+                Int_FPM383F_AutoEnroll();
             }
             else if (fingerprint_operation_state == FINGERPRINT_DEL)
             {
                 MY_LOGI("删除指纹");
                 // 删除指纹逻辑 TODO
             }
+            // 改回默认验证指纹状态
+            fingerprint_operation_state = FINGERPRINT_VERIFY;
+            // 执行完进入睡眠，等待下次中断
             Int_FPM383F_Sleep();
             break;
         }
         default:
             break;
         }
-        // 执行完进入睡眠，等待下次中断
-        Int_FPM383F_Sleep();
     }
 }
