@@ -1,4 +1,4 @@
-/*** 
+/***
  * @FilePath: \smart_locker\main\Int\Int_FPM383F.h
  * @Description: 指纹模块FPM383F接口函数头文件
  * @Author:  Vesper Shaw (octxgq@gmail.com)
@@ -19,22 +19,18 @@
 #include "Int_BDR6120S.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-extern TaskHandle_t App_IO_FingerPrintScan_Handle;
+    extern TaskHandle_t App_IO_FingerPrintScan_Handle;
 
-
-
-void Int_FPM383F_Init(void);
-void Int_FPM383F_ReadId(void);
-
-void Int_FPM383F_Sleep(void);
-
-
-
-void Int_FPM383F_AutoEnroll(void);
-
+    void Int_FPM383F_Init(void);
+    void Int_FPM383F_ReadId(void);
+    void Int_FPM383F_Sleep(void);
+    void Int_FPM383F_AutoIdentify(void);
+    void Int_FPM383F_AutoEnroll(void);
+    void Int_FPM383F_DeleteFingerprint(void);
 
 #ifdef __cplusplus
 }

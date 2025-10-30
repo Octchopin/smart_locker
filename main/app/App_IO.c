@@ -264,9 +264,10 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
 {
 
     MY_LOGI("指纹任务启动");
+    static Fingerprint_Operation_State_t fingerprint_operation_state = FINGERPRINT_VERIFY;
     while (1)
     {
-        Fingerprint_Operation_State_t fingerprint_operation_state = FINGERPRINT_VERIFY;
+
         uint32_t ulNotifiedValue;
         // 等待指纹中断通知
         xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
@@ -313,7 +314,8 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
             else if (fingerprint_operation_state == FINGERPRINT_DEL)
             {
                 MY_LOGI("删除指纹");
-                // 删除指纹逻辑 TODO
+                // 删除指纹逻辑
+                Int_FPM383F_DeleteFingerprint();
             }
             // 改回默认验证指纹状态
             fingerprint_operation_state = FINGERPRINT_VERIFY;

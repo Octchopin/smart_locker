@@ -3,7 +3,7 @@
  * @Description:
  * @Author:  Vesper Shaw (octxgq@gmail.com)
  * @Date: 2025-10-16 17:59:45
- * @LastEditTime: 2025-10-30 18:51:26
+ * @LastEditTime: 2025-10-30 23:52:25
  * @LastEditors: Vesper Shaw (octxgq@gmail.com)
  * Copyright (c) 2025 by XXX有限公司, All Rights Reserved.
  */
@@ -26,7 +26,8 @@ static void Int_FPM383F_CheckSum(uint8_t *cmd, uint16_t len);
 static esp_err_t Int_FPM383F_ReceiveData(uint8_t *rx_buffer, uint16_t data_size, TickType_t ticks_to_wait);
 static esp_err_t Int_FPM383F_SendCmd(uint8_t *cmd, uint16_t len);
 static void Int_FPM383F_CancelAutoIdentifyOrEnroll(void);
-static int16_t Int_FPM383F_GetID(void);
+static int16_t Int_FPM383F_GetId(void);
+static int16_t Int_FPM383F_GetId_Of_DeletedFingerprint(void);
 
 static void IRAM_ATTR Fpm383f_int_handler(void *arg)
 {
@@ -116,6 +117,7 @@ void Int_FPM383F_Init(void)
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
     uart_driver_install(FINGER_UART_NUM, FINGER_RX_BUF_SIZE, 0, 0, NULL, 0);
     uart_param_config(FINGER_UART_NUM, &uart_conf);
+    gpio_set_pull_mode(FINGER_UART_RX_PIN, GPIO_PULLUP_ONLY);
     uart_set_pin(FINGER_UART_NUM, FINGER_UART_TX_PIN, FINGER_UART_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
     // 延时让模块上电稳定
@@ -284,7 +286,13 @@ void Int_FPM383F_AutoEnroll(void)
     // 停止自动验证或者注册-------------解决芯片内部因为自动注册完不及时清理可能出现bug
     Int_FPM383F_CancelAutoIdentifyOrEnroll();
     // ID号
-    int16_t id = Int_FPM383F_GetID();
+    int16_t id = Int_FPM383F_GetId();
+    if (id < 0)
+    {
+        MY_LOGI("Failed to generate fingerprint ID");
+        sayFingerprintAddFail();
+        return;
+    }
     /*参数-----------根据通讯协议指令包说明设置
     bit0-bit5: 0001 1011 ---> 0x1B
     bit0: 1 获取图像成功后灭
@@ -354,7 +362,7 @@ void Int_FPM383F_AutoEnroll(void)
                 sayPlaceFingerAgain();
             }
         }
-        else if (parameter_1 == 0x06 && parameter_2 == 0xf2)
+        else if (parameter_1 == 0x05 && parameter_2 == 0xf1)
         {
             MY_LOGI("AutoEnroll success ");
             // 指纹注册成功语音提示
@@ -372,7 +380,7 @@ void Int_FPM383F_AutoEnroll(void)
  * @param None
  * @retval None
  */
-static int16_t Int_FPM383F_GetID(void)
+static int16_t Int_FPM383F_GetId(void)
 {
     // 获取ID指令包
     uint8_t cmd[] = {
@@ -491,4 +499,144 @@ void Int_FPM383F_AutoIdentify(void)
 
     // 取消自动识别，清理状态
     Int_FPM383F_CancelAutoIdentifyOrEnroll();
+}
+
+/**
+ * @brief   删除指纹获取ID
+ * @param None
+ * @retval None
+ */
+static int16_t Int_FPM383F_GetId_Of_DeletedFingerprint(void)
+{
+    // 通过删除指纹获取ID
+    //  清理状态-------------解决芯片内部因为自动验证完不及时清理可能出现bug
+    Int_FPM383F_CancelAutoIdentifyOrEnroll();
+    // 自动识别指纹指令包
+    uint8_t cmd[] = {
+        // 包头
+        0xEF, 0x01,
+        // 设备地址
+        0xFF, 0xFF, 0xFF, 0xFF,
+        // 包标识
+        0x01,
+        // 包长度
+        0x00, 0x08,
+        // 指令码
+        0x32,
+        // 分数等级
+        0x00,
+        // ID号0xffff表示1:N识别
+        0xFF, 0xFF,
+        // 参数  0x0000表示默认参数
+        0x00, 0x00,
+        // 校验和
+        '\0',
+        '\0'};
+    // 计算校验和
+    Int_FPM383F_CheckSum(cmd, sizeof(cmd));
+    // 发送命令
+    Int_FPM383F_SendCmd(cmd, sizeof(cmd));
+    // 循环接受不同响应
+    int16_t id = -1;
+    while (1)
+    {
+        // 接受响应包
+        Int_FPM383F_ReceiveData(rx_buffer, 44, 5000 / portTICK_PERIOD_MS);
+        // 定义确认码、包标识、参数1、参数2
+        uint8_t package_identifier = rx_buffer[6];
+        uint8_t confirmation_code = rx_buffer[9];
+        uint8_t parameter_1 = rx_buffer[10];
+        // 根据包标识判断是否收到数据，根据确认码判断是否收到正确数据
+        if (package_identifier == 0x00)
+            continue;
+        if (confirmation_code != 0x00)
+        {
+            // 获取错误信息
+            MY_LOGI("Get fingerprint ID failed");
+            break;
+        }
+        else if (parameter_1 == 0x05 && confirmation_code == 0x00)
+        {
+            // 获取ID
+            id = (rx_buffer[11] << 8) | rx_buffer[12];
+            break;
+        }
+    }
+    // 取消自动识别，清理状态
+    Int_FPM383F_CancelAutoIdentifyOrEnroll();
+
+    return id;
+}
+
+/**
+ * @brief   删除指纹
+ * @param   None
+ * @retval None
+ */
+void Int_FPM383F_DeleteFingerprint(void)
+{
+    // 获取要删除的指纹ID
+    int16_t id = Int_FPM383F_GetId_Of_DeletedFingerprint();
+    if (id < 0)
+    {
+        MY_LOGI("Failed to get fingerprint ID");
+        sayDelFail();
+        return;
+    }
+    // 分别获取高八位和第八位
+    uint8_t id_high = (uint8_t)(id >> 8);
+    uint8_t id_low = (uint8_t)id & 0xFF;
+    // 删除指纹指令包
+    uint8_t cmd[] = {
+        // 包头
+        0xEF, 0x01,
+        // 设备地址
+        0xFF, 0xFF, 0xFF, 0xFF,
+        // 包标识
+        0x01,
+        // 包长度
+        0x00, 0x07,
+        // 指令码
+        0x0c,
+        // 页码
+        id_high, id_low,
+        // 删除个数
+        0x00, 0x01,
+        // 校验和
+        '\0',
+        '\0'};
+    // 计算校验和
+    Int_FPM383F_CheckSum(cmd, sizeof(cmd));
+    // 发送命令
+    Int_FPM383F_SendCmd(cmd, sizeof(cmd));
+    // 循环接受不同响应
+    while (1)
+    {
+        // 接受响应包
+        Int_FPM383F_ReceiveData(rx_buffer, 12, 5000 / portTICK_PERIOD_MS);
+        // 获取确认码、包标识
+        uint8_t package_identifier = rx_buffer[6];
+        uint8_t confirmation_code = rx_buffer[9];
+        // 根据包标识判断是否收到数据，根据确认码判断是否
+        if (package_identifier == 0x00)
+            continue;
+
+        if (confirmation_code == 0x00)
+        {
+            // 指纹删除成功语音提示
+            sayDelUserFingerprint();
+            sayDelSucc();
+            MY_LOGI("Delete fingerprint succ");
+            break;
+        }
+        else
+        {
+            // 获取错误信息
+            MY_LOGI("Delete fingerprint failed,conf: 0x%02X", confirmation_code);
+            // 指纹删除失败语音提示
+            sayDelUserFingerprint();
+            sayDelFail();
+            break;
+        }
+    }
 }
