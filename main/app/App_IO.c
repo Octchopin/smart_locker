@@ -7,6 +7,7 @@ static uint8_t input_len = 0;
 static Input_handle_status_t input_handle_state = VERIFY_PWD;
 // 当前状态
 static Input_status_t current_state = STATE_IDLE;
+static Fingerprint_Operation_State_t fingerprint_operation_state = FINGERPRINT_VERIFY;
 
 static void APP_IO_Input_Handle(void);
 
@@ -264,7 +265,7 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
 {
 
     MY_LOGI("指纹任务启动");
-    static Fingerprint_Operation_State_t fingerprint_operation_state = FINGERPRINT_VERIFY;
+
     while (1)
     {
 
@@ -281,6 +282,8 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
             sayAddUserFingerprint();
             // 请放置手指
             sayPlaceFinger();
+            //闪烁蓝色LED
+            LED_BLUE_FLICKER;
             // 改变指纹操作状态为添加指纹
             fingerprint_operation_state = FINGERPRINT_ADD;
             break;
@@ -292,6 +295,8 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
             sayDelUserFingerprint();
             // 请放置手指
             sayPlaceFinger();
+            //闪烁红色LED
+            LED_RED_FLICKER;
             // 改变指纹操作状态为删除指纹
             fingerprint_operation_state = FINGERPRINT_DEL;
             break;
@@ -302,20 +307,28 @@ void App_IO_FingerPrintScan_Task(void *pvParameters)
             if (fingerprint_operation_state == FINGERPRINT_VERIFY)
             {
                 MY_LOGI("验证指纹");
+                //绿灯常亮
+                LED_GREEN_ON;
                 // 一站式验证指纹
                 Int_FPM383F_AutoIdentify();
+                //关闭灯光
+                LED_COLOR_OFF;
             }
             else if (fingerprint_operation_state == FINGERPRINT_ADD)
             {
                 MY_LOGI("添加指纹");
                 // 一站式注册指纹
                 Int_FPM383F_AutoEnroll();
+                // 关闭灯光
+                LED_COLOR_OFF;
             }
             else if (fingerprint_operation_state == FINGERPRINT_DEL)
             {
                 MY_LOGI("删除指纹");
                 // 删除指纹逻辑
                 Int_FPM383F_DeleteFingerprint();
+                // 关闭灯光
+                LED_COLOR_OFF;
             }
             // 改回默认验证指纹状态
             fingerprint_operation_state = FINGERPRINT_VERIFY;

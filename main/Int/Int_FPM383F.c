@@ -3,7 +3,7 @@
  * @Description:
  * @Author:  Vesper Shaw (octxgq@gmail.com)
  * @Date: 2025-10-16 17:59:45
- * @LastEditTime: 2025-10-30 23:52:25
+ * @LastEditTime: 2025-10-31 16:28:59
  * @LastEditors: Vesper Shaw (octxgq@gmail.com)
  * Copyright (c) 2025 by XXX有限公司, All Rights Reserved.
  */
@@ -339,7 +339,7 @@ void Int_FPM383F_AutoEnroll(void)
         uint8_t parameter_1 = rx_buffer[10];
         uint8_t parameter_2 = rx_buffer[11];
         // 根据包标识判断是否收到数据，根据确认码判断是否收到正确数据
-        if (package_identifier == 0x00)
+        if (package_identifier == 0x07)
             continue;
         if (confirmation_code != 0x00)
         {
@@ -475,7 +475,7 @@ void Int_FPM383F_AutoIdentify(void)
         uint8_t confirmation_code = rx_buffer[9];
         uint8_t parameter_1 = rx_buffer[10];
         // 根据包标识判断是否收到数据，根据确认码判断是否收到正确数据
-        if (package_identifier == 0x00)
+        if (package_identifier == 0x07)
             continue;
         if (confirmation_code != 0x00)
         {
@@ -547,7 +547,7 @@ static int16_t Int_FPM383F_GetId_Of_DeletedFingerprint(void)
         uint8_t confirmation_code = rx_buffer[9];
         uint8_t parameter_1 = rx_buffer[10];
         // 根据包标识判断是否收到数据，根据确认码判断是否收到正确数据
-        if (package_identifier == 0x00)
+        if (package_identifier == 0x07)
             continue;
         if (confirmation_code != 0x00)
         {
@@ -618,7 +618,7 @@ void Int_FPM383F_DeleteFingerprint(void)
         uint8_t package_identifier = rx_buffer[6];
         uint8_t confirmation_code = rx_buffer[9];
         // 根据包标识判断是否收到数据，根据确认码判断是否
-        if (package_identifier == 0x00)
+        if (package_identifier == 0x07)
             continue;
 
         if (confirmation_code == 0x00)
@@ -636,6 +636,79 @@ void Int_FPM383F_DeleteFingerprint(void)
             // 指纹删除失败语音提示
             sayDelUserFingerprint();
             sayDelFail();
+            break;
+        }
+    }
+}
+
+/**
+ * @brief   LED控制: 呼吸灯控制---------一般指示灯控制普通呼吸灯
+ * @param {uint8_t} fun
+ *      1-普通呼吸灯，2-闪烁灯，3-常开灯，4-常闭灯，5-渐开灯，6-渐闭灯
+ * @param {uint8_t} startColor
+ *      设置为普通呼吸灯时，由灭到亮的颜色，只限于普通呼吸灯（功能码 01）功能，其他功能时，与结束颜色保持一致。
+ *      其中，bit0 是蓝灯控制位；bit1 是绿灯控制位；bit2 是红灯控制位。
+ *      置 1 灯亮，置 0 灯灭。
+ *      例如 0x01_蓝灯亮，
+ *           0x02_绿灯亮，
+ *           0x04_红灯亮，
+ *           0x06_红绿灯亮，
+ *           0x05_红蓝灯亮，
+ *           0x03_绿蓝灯亮，
+ *           0x07_红绿蓝灯亮，
+ *           0x00_全灭；
+ * @param {uint8_t} endColor
+ * @param {uint8_t} cycle
+ *              表示呼吸或者闪烁灯的次数。
+ *                  当设为 0 时，表示无限循环，
+ *                  当设为其他值时，表示呼吸有限次数。
+ *              循环次数适用于呼吸、闪烁功能，其他功能中无效，
+ *                  例如在常开、常闭、开和渐闭中是无效的；
+ * @return {*}
+ */
+void Int_FPM383F_LedControl(uint8_t fun, uint8_t startColor, uint8_t endColor, uint8_t cycle)
+{
+    uint8_t cmd[] = {
+        0xEF,
+        0x01, // 包头
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF, // 默认地址
+        0x01, // 包标识
+        0x00,
+        0x07, // 包长度
+        0x3C, // 指令码
+        '\0', // 功能码占位符
+        '\0', // 起始颜色占位符
+        '\0', // 结束颜色占位符
+        '\0', // 循环次数占位符
+        '\0',
+        '\0' // 校验和占位符
+    };
+
+    cmd[10] = fun;
+    cmd[11] = startColor;
+    cmd[12] = endColor;
+    cmd[13] = cycle;
+
+    Int_FPM383F_CheckSum(cmd, sizeof(cmd));
+    Int_FPM383F_SendCmd(cmd, sizeof(cmd));
+    while (1)
+    {
+
+        Int_FPM383F_ReceiveData(rx_buffer, 12, portMAX_DELAY);
+        if (rx_buffer[6] == 0x07)
+            continue;
+        if (rx_buffer[9] == 0x00)
+        {
+
+            MY_LOGI("LED  is executed successfully");
+            break;
+        }
+        else
+        {
+            MY_LOGI("LED  fail to execute");
             break;
         }
     }
