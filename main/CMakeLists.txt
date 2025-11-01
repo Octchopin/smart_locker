@@ -4,10 +4,14 @@ idf_component_register(SRCS
                      "Int/Int_WTN6.c"
                      "Int/Int_WS2812.c"
                      "Int/Int_SC12B.c"
-                      "App/App_IO.c"
-                      "Dri/Dri_NVS.c"
+                     "App/App_IO.c"
+                     "App/App_Commu.c"
+                     "Dri/Dri_NVS.c"
+                     "Dri/Dri_BLE.c"
                      "Int/Int_BDR6120S.c"
                      "Int/Int_FPM383F.c"
+                    
+                    
                     INCLUDE_DIRS 
                      "com"
                      "Int"
@@ -15,6 +19,9 @@ idf_component_register(SRCS
                      "Dri"
 
                    REQUIRES driver
-                     REQUIRES nvs_flash
+                     REQUIRES nvs_flash 
+                     REQUIRES bt
+                     
+             
                      
                     )
